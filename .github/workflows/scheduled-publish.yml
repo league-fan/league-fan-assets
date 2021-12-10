@@ -25,6 +25,7 @@ jobs:
       - name: Generate & Publish
         run: |
           npx npm-cli-adduser -u ${{ secrets.NPM_USER }} -e ${{ secrets.NPM_EMAIL }} -p ${{ secrets.NPM_PASS }}
+          npm install
           ./scripts/publish.sh
 
       - uses: actions/upload-artifact@v2
