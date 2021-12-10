@@ -1,5 +1,4 @@
 const axios = require("axios");
-const init = require('init-package-json')
 const path = require("path");
 const fs = require("fs");
 const rawPath = "./raw"
