@@ -16,13 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Checkout to latest tag
-        run: |
-          git fetch --prune --unshallow
-          latestTag=$(git describe --tags --abbrev=0)
-          git checkout tags/$latestTag
-          echo "current version: $latestTag"
-
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
