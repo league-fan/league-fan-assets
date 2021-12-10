@@ -130,11 +130,12 @@ async function genPackage() {
   "version": "${verJson.data.v}-v${Date.now().toString()}",
   "sourceVersion": "${verJson.data.v}",
   "description": "league-fan assets.",
-  "main": "index.json",
+  "main": "index.js",
   "author": "magicwenli",
   "license": "MIT"
 }`
     fs.writeFileSync(path.resolve(savePath, 'package.json'), package)
+    fs.writeFileSync(path.resolve(savePath, 'version.json'), JSON.stringify(verJson.data, null, 2))
 }
 
 
