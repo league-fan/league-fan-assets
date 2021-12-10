@@ -1,24 +1,38 @@
 const axios = require("axios");
+const init = require('init-package-json')
 const path = require("path");
 const fs = require("fs");
 const rawPath = "./raw"
 const savePath = "./save"
+
 const language = ["zh_cn", "default"]
 const jsonArray = [
     "loot.json",
-    "profile-icons.json",
+    // "profile-icons.json",
     "summoner-emotes.json",
     "summoner-icons.json",
     "summoner-icon-sets.json",
     "ward-skins.json",
     "ward-skin-sets.json",
 ]
+
 const url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/{language}/v1/"
+const profileUrlCn = "https://dlied1.qq.com/lolapp/lol/summoner/profileicon/"
+const verUrl = "https://ddragon.leagueoflegends.com/realms/tencent.json"
+
+function clearCache() {
+    if (fs.existsSync(path.resolve(rawPath))) {
+        fs.rmSync(rawPath, {recursive: true});
+    }
+    if (fs.existsSync(path.resolve(savePath))) {
+        fs.rmSync(savePath, {recursive: true});
+    }
+}
 
 async function retrieveRaw() {
     for (let lang of language) {
         if (!fs.existsSync(path.resolve(rawPath, lang))) {
-            fs.mkdirSync(path.resolve(rawPath, lang))
+            fs.mkdirSync(path.resolve(rawPath, lang), {recursive: true})
         }
         for (let fileName of jsonArray) {
             let mypath = path.resolve(rawPath, lang, fileName)
@@ -45,26 +59,20 @@ function parseLoot() {
         if (!fs.existsSync(lootPath)) {
             throw new Error(`没有找到${lootPath}`)
         }
-        let rawJson = {};
         let newJson = []
-        fs.readFile(lootPath, function (err, data) {
-            if (err)
-                throw err;
-            rawJson = JSON.parse(data.toString());
+        let rawJson = JSON.parse(fs.readFileSync(lootPath, 'utf-8').toString())
 
-            for (const rawJsonElement of rawJson.LootItems) {
-                if (rawJsonElement.id.match(/CHEST_[0-9]{1,4}$/g) != null) {
-                    newJson.push(rawJsonElement)
-                    // console.log(rawJsonElement.id)
-                }
+        for (const rawJsonElement of rawJson.LootItems) {
+            if (rawJsonElement.id.match(/CHEST_[0-9]{1,4}$/g) != null) {
+                newJson.push(rawJsonElement)
             }
-            newJson.sort((a, b) => {
-                return a.mappedStoreId - b.mappedStoreId
-            })
-            if (newJson.length !== 0) {
-                fs.writeFileSync(lootPath, JSON.stringify(newJson,))
-            }
-        });
+        }
+        newJson.sort((a, b) => {
+            return a.mappedStoreId - b.mappedStoreId
+        })
+        if (newJson.length !== 0) {
+            fs.writeFileSync(lootPath, JSON.stringify(newJson))
+        }
     }
 }
 
@@ -89,27 +97,53 @@ function replaceAssetsPath(filepath, stats) {
             let mat = filepath.match(/\/([a-z_]{1,8})\/(.*)/)
             let lang = mat[1]  // 最好用default
             let filename = mat[2]
-
-            let myData = data.replace(/\/lol-game-data\/assets\/((v1|content|ASSETS)[A-Za-z0-9\/.\-_]+\.(png|jpg))/g, (match, p1, p2, p3, offset, string) => {
-                // 最好lang用default
-                return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/${p1.toLowerCase()}`
-            })
-            if (myData.length !== 0) {
+            let parsedData;
+            switch (filename) {
+                case 'summoner-icons.json':
+                    if (lang === 'zh_cn') {
+                        parsedData = data.replace(/\/lol-game-data\/assets\/v1\/profile-icons\/([0-9]+\.(jpg|png))/g, (match, p1) => {
+                            return `${profileUrlCn}${p1.toLowerCase()}`
+                        })
+                        break;
+                    }
+                default:
+                    parsedData = data.replace(/\/lol-game-data\/assets\/((v1|content|ASSETS)[A-Za-z0-9\/.\-_]+\.(png|jpg))/g, (match, p1, p2, p3, offset, string) => {
+                        // 最好lang用default
+                        return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/${p1.toLowerCase()}`
+                    })
+            }
+            if (parsedData.length !== 0) {
                 if (!fs.existsSync(path.resolve(savePath, lang))) {
-                    fs.mkdirSync(path.resolve(savePath, lang))
+                    fs.mkdirSync(path.resolve(savePath, lang), {recursive: true})
                 }
-                fs.writeFileSync(path.resolve(savePath, lang, filename), myData)
+                fs.writeFileSync(path.resolve(savePath, lang, filename), parsedData)
+                console.log(`save: ${path.resolve(savePath, lang, filename)}`)
             }
 
         }
     })
 }
 
+async function genPackage() {
+    let verJson = await axios.get(verUrl)
+    let package = `{
+  "name": "@magicwenli/league-fan-assets",
+  "version": "${verJson.data.v}-v${Date.now().toString()}",
+  "sourceVersion": "${verJson.data.v}",
+  "description": "league-fan assets.",
+  "main": "index.json",
+  "author": "magicwenli",
+  "license": "MIT"
+}`
+    fs.writeFileSync(path.resolve(savePath, 'package.json'), package)
+}
+
+
+clearCache()
 retrieveRaw().then(res => {
-    console.log("ok")
     parseLoot()
     walkSync(rawPath, replaceAssetsPath)
-    // TODO zh_cn profile icon 或可使用本地cdn
+    genPackage().then(res => {
+        console.log(`write: ${path.resolve(savePath, 'package.json')}`)
+    })
 })
-
-
