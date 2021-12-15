@@ -2,3 +2,4 @@
 /save
 /node_modules
 /.idea
+.npmrc

@@ -4,6 +4,7 @@ workDir=$(pwd)
 
 publish() {
   if [ -d "$workDir/save" ]; then
+    cp ".npmrc" "$workDir/save/.npmrc"
     cd "$workDir/save" || return
     log "ready to publish"
     $npm publish --access public
