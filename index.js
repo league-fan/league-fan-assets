@@ -4,6 +4,8 @@ const fs = require("fs");
 const rawPath = "./raw"
 const savePath = "./save"
 
+const matchSep = path.sep === "\\" ? "\\\\" : "\/"
+
 const language = ["zh_cn", "default"]
 const jsonArray = [
     "loot.json",
@@ -21,17 +23,17 @@ const verUrl = "https://ddragon.leagueoflegends.com/realms/tencent.json"
 
 function clearCache() {
     if (fs.existsSync(path.resolve(rawPath))) {
-        fs.rmSync(rawPath, {recursive: true});
+        fs.rmSync(rawPath, { recursive: true });
     }
     if (fs.existsSync(path.resolve(savePath))) {
-        fs.rmSync(savePath, {recursive: true});
+        fs.rmSync(savePath, { recursive: true });
     }
 }
 
 async function retrieveRaw() {
     for (let lang of language) {
         if (!fs.existsSync(path.resolve(rawPath, lang))) {
-            fs.mkdirSync(path.resolve(rawPath, lang), {recursive: true})
+            fs.mkdirSync(path.resolve(rawPath, lang), { recursive: true })
         }
         for (let fileName of jsonArray) {
             let mypath = path.resolve(rawPath, lang, fileName)
@@ -93,7 +95,8 @@ function replaceAssetsPath(filepath, stats) {
         if (err) {
             console.log(err);
         } else {
-            let mat = filepath.match(/\/([a-z_]{1,8})\/(.*)/)
+            let re = new RegExp(`${matchSep}([a-z_]{1,8})${matchSep}(.*)`)
+            let mat = filepath.match(re)
             let lang = mat[1]  // 最好用default
             let filename = mat[2]
             let parsedData;
@@ -113,7 +116,7 @@ function replaceAssetsPath(filepath, stats) {
             }
             if (parsedData.length !== 0) {
                 if (!fs.existsSync(path.resolve(savePath, lang))) {
-                    fs.mkdirSync(path.resolve(savePath, lang), {recursive: true})
+                    fs.mkdirSync(path.resolve(savePath, lang), { recursive: true })
                 }
                 fs.writeFileSync(path.resolve(savePath, lang, filename), parsedData)
                 console.log(`save: ${path.resolve(savePath, lang, filename)}`)
