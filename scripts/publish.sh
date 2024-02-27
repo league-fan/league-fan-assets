@@ -19,6 +19,22 @@ log() {
 
 log "pwd is $workDir"
 
+rm -rf "$workDir/SKIP"
 node "$workDir/index.js"
 
+if [ -f "$workDir/SKIP" ]; then
+  log "Version not change, skip publish"
+  exit 0
+fi
+
 publish
+
+if [ $? -eq 0 ]; then
+  log "publish success"
+  git add $workDir/VERSION
+  git commit -m "chore: publish version $(cat VERSION)"
+  git push
+else
+  log "publish failed"
+  exit 1
+fi

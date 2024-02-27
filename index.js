@@ -128,17 +128,31 @@ function replaceAssetsPath(filepath, stats) {
 
 async function genPackage() {
     let verJson = await axios.get(verUrl)
-    let package = `{
-  "name": "@magicwenli/league-fan-assets",
-  "version": "${verJson.data.v}-v${Date.now().toString()}",
-  "sourceVersion": "${verJson.data.v}",
-  "description": "league-fan assets.",
-  "main": "index.js",
-  "author": "magicwenli",
-  "license": "MIT"
-}`
-    fs.writeFileSync(path.resolve(savePath, 'package.json'), package)
-    fs.writeFileSync(path.resolve(savePath, 'version.json'), JSON.stringify(verJson.data, null, 2))
+    // read from VERSION and compare
+    fs.readFile("VERSION", 'utf-8', (err, data) => {
+        if (err) {
+            console.log(err);
+        } else {
+            let version = data.replace(/\n/g, "")
+            if (version !== verJson.data.v) {
+                fs.writeFileSync("VERSION", verJson.data.v)
+                let package = `{
+                    "name": "@magicwenli/league-fan-assets",
+                    "version": "${verJson.data.v}-v${Date.now().toString()}",
+                    "sourceVersion": "${verJson.data.v}",
+                    "description": "league-fan assets.",
+                    "main": "index.js",
+                    "author": "magicwenli",
+                    "license": "MIT"
+                  }`
+                fs.writeFileSync(path.resolve(savePath, 'package.json'), package)
+                fs.writeFileSync(path.resolve(savePath, 'version.json'), JSON.stringify(verJson.data, null, 2))
+            }else{
+                console.log('VERSION is up to date')
+                fs.writeFileSync("SKIP", "")
+            }
+        }
+    })
 }
 
 
