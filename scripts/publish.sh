@@ -31,9 +31,7 @@ publish
 
 if [ $? -eq 0 ]; then
   log "publish success"
-  git add $workDir/VERSION
-  git commit -m "chore: publish version $(cat VERSION)"
-  git push
+  exit 0
 else
   log "publish failed"
   exit 1
