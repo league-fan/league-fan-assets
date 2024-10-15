@@ -39,7 +39,7 @@ jobs:
           default_author: github_actions
           message: "chore: publish version ${{ env.CURR_VERSION }}"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: packages
           path: |
