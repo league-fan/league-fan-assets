@@ -101,14 +101,20 @@ pub fn get_assets_url(
     version: Option<String>,
 ) -> String {
     match version {
-        Some(version) => format!(
-            "https://raw.communitydragon.org/{}/plugins/rcp-be-lol-game-data/global/{}/v1/{}",
-            version,
-            language.as_str(),
-            assets_type.as_str()
-        ),
+        Some(version) => {
+            // 14.21.1 ==> 14.21
+            let version = version.split('.').take(2).collect::<Vec<&str>>().join(".");
+            format!(
+                "{}/{}/plugins/rcp-be-lol-game-data/global/{}/v1/{}",
+                COMMUNITY_DRAGON_URL,
+                version,
+                language.as_str(),
+                assets_type.as_str()
+            )
+        }
         None => format!(
-            "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/{}/v1/{}",
+            "{}/latest/plugins/rcp-be-lol-game-data/global/{}/v1/{}",
+            COMMUNITY_DRAGON_URL,
             language.as_str(),
             assets_type.as_str()
         ),
@@ -122,10 +128,14 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             version: None,
             language: LanguageType::default(),
         }
+    }
+
+    pub fn new(version: Option<String>, language: LanguageType) -> Self {
+        Self { version, language }
     }
 }

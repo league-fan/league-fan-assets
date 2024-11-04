@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use super::{
-    common::{Description, Rarity},
+    common::{Description, Rarity, RarityEnum},
     utils::{get_assets_url, AssetsType, Config},
 };
 
@@ -21,7 +21,7 @@ pub struct Skin {
     pub tile_path: String,
     pub load_screen_path: String,
     pub skin_type: SkinType,
-    pub rarity: Rarity,
+    pub rarity: RarityEnum,
     pub is_legacy: bool,
     pub splash_video_path: Option<String>,
     pub collection_splash_video_path: Option<String>,
@@ -60,14 +60,14 @@ pub struct Chroma {
 #[serde(rename_all = "camelCase")]
 pub struct SkinAugments {
     pub borders: Borders,
-    pub augments: Vec<Augment>,
+    pub augments: Option<Vec<Augment>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Borders {
-    pub layer0: Vec<Layer>,
-    pub layer1: Vec<Layer>,
+    pub layer0: Option<Vec<Layer>>,
+    pub layer1: Option<Vec<Layer>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -159,5 +159,24 @@ impl Skins {
             .json::<HashMap<String, Skin>>()
             .await?;
         Ok(Skins(body))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Deserialize the loot.json file into a Loot struct and compare the id of the first loot item
+    #[tokio::test]
+    async fn test_skins() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+
+        let skins = Skins::get(&config).await.unwrap();
+        let n1000 = skins.0.get("1000").unwrap();
+        assert_eq!(n1000.id, 1000);
+        assert_eq!(n1000.name, "Annie");
     }
 }

@@ -37,3 +37,23 @@ impl SummonerBanners {
         Ok(body)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_summoner_banners() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+        let summoner_banners = SummonerBanners::get(&config).await.unwrap();
+        let banner_flag = &summoner_banners.banner_flags[0];
+        let banner_frame = &summoner_banners.banner_frames[0];
+        assert_eq!(banner_flag.level, 1);
+        assert_eq!(banner_flag.theme, "Bandle_City");
+        assert_eq!(banner_frame.level, 1);
+        assert_eq!(banner_frame.name, "");
+    }
+}

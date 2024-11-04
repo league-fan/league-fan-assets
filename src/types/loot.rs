@@ -129,3 +129,37 @@ impl Loot {
         Ok(body)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Deserialize the loot.json file into a Loot struct and compare the id of the first loot item
+    #[tokio::test]
+    async fn test_loot() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+        // {
+        //     "LootItems": [
+        //       {
+        //         "id": "STATSTONE_SHARD_66600132",
+        //         "name": "Warwick - Series 1",
+        //         "description": "Unlock Series 1 Eternals for Warwick.",
+        //         "image": "",
+        //         "startDate": "",
+        //         "endDate": "",
+        //         "mappedStoreId": 0,
+        //         "lifetimeMax": 0,
+        //         "autoRedeem": true,
+        //         "rarity": "Default",
+        //         "type": "Statstone_Shard"
+        //       }
+        //     ]
+        // }
+        let loot = Loot::get(&config).await.unwrap();
+        assert_eq!(loot.loot_items[0].id, "STATSTONE_SHARD_66600132");
+        assert_eq!(loot.loot_items[0].name, "Warwick - Series 1");
+    }
+}
