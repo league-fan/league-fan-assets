@@ -37,8 +37,11 @@ pub struct SummonerIconSet {
 
 impl SummonerIcons {
     pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let config = config.clone();
-        let url = get_assets_url(AssetsType::SummonerIcons, config.language, config.version);
+        let url = get_assets_url(
+            &AssetsType::SummonerIcons,
+            &config.language,
+            &config.version,
+        );
         let body = reqwest::get(&url)
             .await?
             .json::<Vec<SummonerIcon>>()
@@ -49,11 +52,10 @@ impl SummonerIcons {
 
 impl SummonerIconSets {
     pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let config = config.clone();
         let url = get_assets_url(
-            AssetsType::SummonerIconSets,
-            config.language,
-            config.version,
+            &AssetsType::SummonerIconSets,
+            &config.language,
+            &config.version,
         );
         let body = reqwest::get(&url)
             .await?

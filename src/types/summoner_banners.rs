@@ -31,8 +31,11 @@ pub struct BannerFrame {
 
 impl SummonerBanners {
     pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let config = config.clone();
-        let url = get_assets_url(AssetsType::SummonerBanners, config.language, config.version);
+        let url = get_assets_url(
+            &AssetsType::SummonerBanners,
+            &config.language,
+            &config.version,
+        );
         let body = reqwest::get(&url).await?.json::<SummonerBanners>().await?;
         Ok(body)
     }

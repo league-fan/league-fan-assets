@@ -115,9 +115,9 @@ impl LanguageType {
 }
 
 pub fn get_assets_url(
-    assets_type: AssetsType,
-    language: LanguageType,
-    version: Option<String>,
+    assets_type: &AssetsType,
+    language: &LanguageType,
+    version: &Option<String>,
 ) -> String {
     match version {
         Some(version) => {
@@ -150,6 +150,29 @@ pub async fn get_game_versions() -> Result<Vec<String>, reqwest::Error> {
 pub async fn get_latest_version() -> Result<String, reqwest::Error> {
     let versions = get_game_versions().await?;
     Ok(versions[0].clone())
+}
+
+pub fn get_all_assets_urls(config: &Config) -> Vec<String> {
+    let mut urls = Vec::new();
+    for assets_type in [
+        AssetsType::Loot,
+        AssetsType::Skins,
+        AssetsType::SummonerEmotes,
+        AssetsType::SummonerBanners,
+        AssetsType::SummonerIcons,
+        AssetsType::SummonerIconSets,
+        AssetsType::WardSkins,
+        AssetsType::WardSkinSets,
+    ]
+    .iter()
+    {
+        urls.push(get_assets_url(
+            assets_type,
+            &config.language,
+            &config.version,
+        ));
+    }
+    urls
 }
 
 #[cfg(test)]

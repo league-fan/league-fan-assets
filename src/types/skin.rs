@@ -152,8 +152,7 @@ pub enum SkinType {
 
 impl Skins {
     pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let config = config.clone();
-        let url = get_assets_url(AssetsType::Skins, config.language, config.version);
+        let url = get_assets_url(&AssetsType::Skins, &config.language, &config.version);
         let body = reqwest::get(&url)
             .await?
             .json::<HashMap<String, Skin>>()

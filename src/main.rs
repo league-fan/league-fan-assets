@@ -3,6 +3,8 @@ use league_fan_assets::types::preludes::*;
 #[tokio::main]
 async fn main() {
     let config = Config::new(None, LanguageType::Default);
-    let summoner_icons = SummonerIcons::get(&config).await.unwrap();
-    println!("{:?}", summoner_icons.0[0]);
+    let all_urls = get_all_assets_urls(&config);
+    all_urls.iter().for_each(|url| {
+        println!("{}", url);
+    });
 }

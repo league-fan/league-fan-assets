@@ -40,8 +40,7 @@ pub struct WardSkinSet {
 
 impl WardSkins {
     pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let config = config.clone();
-        let url = get_assets_url(AssetsType::WardSkins, config.language, config.version);
+        let url = get_assets_url(&AssetsType::WardSkins, &config.language, &config.version);
         let body = reqwest::get(&url).await?.json::<Vec<WardSkin>>().await?;
         Ok(WardSkins(body))
     }
@@ -49,8 +48,7 @@ impl WardSkins {
 
 impl WardSkinSets {
     pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let config = config.clone();
-        let url = get_assets_url(AssetsType::WardSkinSets, config.language, config.version);
+        let url = get_assets_url(&AssetsType::WardSkinSets, &config.language, &config.version);
         let body = reqwest::get(&url).await?.json::<Vec<WardSkinSet>>().await?;
         Ok(WardSkinSets(body))
     }
