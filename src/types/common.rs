@@ -1,3 +1,5 @@
+use std::default;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -48,14 +50,23 @@ pub enum RegionEnum {
     #[serde(rename = "ID")]
     Id,
 
+    #[serde(rename = "PH")]
+    Ph,
+
     #[serde(rename = "tencent")]
     RegionTencent,
 
     #[serde(rename = "riot")]
     Riot,
 
+    #[serde(rename = "SG")]
+    Sg,
+
     #[serde(rename = "TENCENT")]
     Tencent,
+
+    #[serde(rename = "TH")]
+    Th,
 
     #[serde(rename = "TW")]
     Tw,

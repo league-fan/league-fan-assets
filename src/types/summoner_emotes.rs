@@ -24,3 +24,21 @@ impl SummonerEmotes {
         Ok(SummonerEmotes(body))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_summoner_emotes() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+        let summoner_emotes = SummonerEmotes::get(&config).await.unwrap();
+        let emote = &summoner_emotes.0[1];
+        assert_eq!(emote.id, 10);
+        assert_eq!(emote.name, "Mastery 10+");
+        assert_eq!(emote.description, "Champion Mastery Level 10+");
+    }
+}

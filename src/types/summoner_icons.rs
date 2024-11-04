@@ -23,7 +23,7 @@ pub struct SummonerIcon {
     pub esports_event: Option<String>,
 }
 
-pub type SummonerIconSets = Vec<SummonerIconSet>;
+pub struct SummonerIconSets(Vec<SummonerIconSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,7 +47,7 @@ impl SummonerIcons {
     }
 }
 
-impl SummonerIconSet {
+impl SummonerIconSets {
     async fn get(config: &Config) -> Result<Self, reqwest::Error> {
         let config = config.clone();
         let url = get_assets_url(
@@ -55,7 +55,41 @@ impl SummonerIconSet {
             config.language,
             config.version,
         );
-        let body = reqwest::get(&url).await?.json::<Self>().await?;
-        Ok(body)
+        let body = reqwest::get(&url)
+            .await?
+            .json::<Vec<SummonerIconSet>>()
+            .await?;
+        Ok(SummonerIconSets(body))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_summoner_icons() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+        let summoner_icons = SummonerIcons::get(&config).await.unwrap();
+        let icon = &summoner_icons.0[0];
+        assert_eq!(icon.id, 0);
+        assert_eq!(icon.title, "Blue Minion Bruiser Icon");
+        assert_eq!(icon.year_released, 2009);
+    }
+
+    #[tokio::test]
+    async fn test_summoner_icon_sets() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+        let summoner_icon_sets = SummonerIconSets::get(&config).await.unwrap();
+        let summoner_icon_set = &summoner_icon_sets.0[0];
+        assert_eq!(summoner_icon_set.id, 100);
+        assert_eq!(summoner_icon_set.hidden, false);
+        assert_eq!(summoner_icon_set.display_name, "Special Events");
     }
 }
