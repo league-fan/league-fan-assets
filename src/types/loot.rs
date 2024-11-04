@@ -29,12 +29,48 @@ pub struct LootItem {
     pub mapped_store_id: i64,
     pub lifetime_max: i64,
     pub auto_redeem: bool,
-    pub rarity: String,
+    pub rarity: RarityField,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TypeField,
     pub recipe_menu_active: Option<String>,
     pub recipe_menu_title: Option<String>,
     pub recipe_menu_subtitle: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum RarityField {
+    #[default]
+    Default,
+    Epic,
+    Legendary,
+    Mythic,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum TypeField {
+    #[default]
+    Boost,
+    Chest,
+    Companion,
+    Currency,
+    Material,
+    Skin,
+    #[serde(rename = "Skin_Rental")]
+    SkinRental,
+    #[serde(rename = "Statstone")]
+    Statstone,
+    #[serde(rename = "Statstone_Shard")]
+    StatstoneShard,
+    #[serde(rename = "SummonerIcon")]
+    SummonerIcon,
+    #[serde(rename = "TFT_Damage_Skin")]
+    TftDamageSkin,
+    #[serde(rename = "TFT_Map_Skin")]
+    TftMapSkin,
+    #[serde(rename = "WardSkin")]
+    WardSkin,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

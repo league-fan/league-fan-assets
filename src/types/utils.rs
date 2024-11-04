@@ -156,6 +156,22 @@ pub fn get_assets_url(
     }
 }
 
+pub fn get_cdragon_url(ori_url: &str, config: &Config) -> String {
+    // "/lol-game-data/assets/ASSETS/Loot/jhin_tile_37.jpg"
+    // -> https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loot/jhin_tile_37.jpg
+    let trimed_url = ori_url.trim_start_matches("/lol-game-data/assets/");
+    let version = match &config.version {
+        Some(version) => version.split('.').take(2).collect::<Vec<&str>>().join("."),
+        None => "latest".to_string(),
+    };
+    let mut url = format!(
+        "{}/{}/plugins/rcp-be-lol-game-data/global/default/",
+        COMMUNITY_DRAGON_URL, version,
+    );
+    url.push_str(trimed_url.to_ascii_lowercase().as_str());
+    url
+}
+
 pub async fn get_game_versions() -> Result<Vec<String>, reqwest::Error> {
     reqwest::get(DDRAGON_VERSIONS_URL)
         .await?
