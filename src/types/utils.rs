@@ -2,6 +2,25 @@ const COMMUNITY_DRAGON_URL: &str = "https://raw.communitydragon.org/";
 const DDRAGON_VERSIONS_URL: &str = "https://ddragon.leagueoflegends.com/api/versions.json";
 
 #[derive(Default, Debug, Clone, PartialEq)]
+pub struct Config {
+    pub version: Option<String>,
+    pub language: LanguageType,
+}
+
+impl Config {
+    pub fn default() -> Self {
+        Self {
+            version: None,
+            language: LanguageType::default(),
+        }
+    }
+
+    pub fn new(version: Option<String>, language: LanguageType) -> Self {
+        Self { version, language }
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq)]
 pub enum AssetsType {
     #[default]
     Loot,
@@ -121,21 +140,26 @@ pub fn get_assets_url(
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq)]
-pub struct Config {
-    pub version: Option<String>,
-    pub language: LanguageType,
+pub async fn get_game_versions() -> Result<Vec<String>, reqwest::Error> {
+    reqwest::get(DDRAGON_VERSIONS_URL)
+        .await?
+        .json::<Vec<String>>()
+        .await
 }
 
-impl Config {
-    pub fn default() -> Self {
-        Self {
-            version: None,
-            language: LanguageType::default(),
-        }
-    }
+pub async fn get_latest_version() -> Result<String, reqwest::Error> {
+    let versions = get_game_versions().await?;
+    Ok(versions[0].clone())
+}
 
-    pub fn new(version: Option<String>, language: LanguageType) -> Self {
-        Self { version, language }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_get_game_versions() {
+        let versions = get_game_versions().await.unwrap();
+        let target = "14.21.1";
+        assert!(versions.contains(&target.to_string()));
     }
 }

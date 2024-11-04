@@ -4,7 +4,7 @@ use super::{
     common::{Rarity, RegionEnum},
     utils::{get_assets_url, AssetsType, Config},
 };
-pub struct WardSkins(Vec<WardSkin>);
+pub struct WardSkins(pub Vec<WardSkin>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -26,7 +26,7 @@ pub struct RegionalDescription {
     pub description: String,
 }
 
-pub struct WardSkinSets(Vec<WardSkinSet>);
+pub struct WardSkinSets(pub Vec<WardSkinSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,7 +39,7 @@ pub struct WardSkinSet {
 }
 
 impl WardSkins {
-    async fn get(config: &Config) -> Result<Self, reqwest::Error> {
+    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
         let config = config.clone();
         let url = get_assets_url(AssetsType::WardSkins, config.language, config.version);
         let body = reqwest::get(&url).await?.json::<Vec<WardSkin>>().await?;
@@ -48,7 +48,7 @@ impl WardSkins {
 }
 
 impl WardSkinSets {
-    async fn get(config: &Config) -> Result<Self, reqwest::Error> {
+    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
         let config = config.clone();
         let url = get_assets_url(AssetsType::WardSkinSets, config.language, config.version);
         let body = reqwest::get(&url).await?.json::<Vec<WardSkinSet>>().await?;

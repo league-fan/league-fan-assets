@@ -5,7 +5,7 @@ use super::{
     utils::{get_assets_url, AssetsType, Config},
 };
 
-pub struct SummonerIcons(Vec<SummonerIcon>);
+pub struct SummonerIcons(pub Vec<SummonerIcon>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,7 +23,7 @@ pub struct SummonerIcon {
     pub esports_event: Option<String>,
 }
 
-pub struct SummonerIconSets(Vec<SummonerIconSet>);
+pub struct SummonerIconSets(pub Vec<SummonerIconSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +36,7 @@ pub struct SummonerIconSet {
 }
 
 impl SummonerIcons {
-    async fn get(config: &Config) -> Result<Self, reqwest::Error> {
+    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
         let config = config.clone();
         let url = get_assets_url(AssetsType::SummonerIcons, config.language, config.version);
         let body = reqwest::get(&url)
@@ -48,7 +48,7 @@ impl SummonerIcons {
 }
 
 impl SummonerIconSets {
-    async fn get(config: &Config) -> Result<Self, reqwest::Error> {
+    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
         let config = config.clone();
         let url = get_assets_url(
             AssetsType::SummonerIconSets,
