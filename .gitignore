@@ -3,3 +3,7 @@
 /node_modules
 /.idea
 .npmrc
+
+# Added by cargo
+
+/target
