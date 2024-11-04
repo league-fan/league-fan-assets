@@ -161,11 +161,28 @@ impl Skins {
     }
 }
 
+pub struct Skinlines(pub Vec<Skinline>);
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Skinline {
+    id: i64,
+    name: String,
+    description: String,
+}
+
+impl Skinlines {
+    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
+        let url = get_assets_url(&AssetsType::Skinlines, &config.language, &config.version);
+        let body = reqwest::get(&url).await?.json::<Vec<Skinline>>().await?;
+        Ok(Skinlines(body))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // Deserialize the loot.json file into a Loot struct and compare the id of the first loot item
     #[tokio::test]
     async fn test_skins() {
         let config = Config::new(
@@ -174,8 +191,21 @@ mod tests {
         );
 
         let skins = Skins::get(&config).await.unwrap();
-        let n1000 = skins.0.get("1000").unwrap();
-        assert_eq!(n1000.id, 1000);
-        assert_eq!(n1000.name, "Annie");
+        let skin = skins.0.get("1000").unwrap();
+        assert_eq!(skin.id, 1000);
+        assert_eq!(skin.name, "Annie");
+    }
+
+    #[tokio::test]
+    async fn test_skinlines() {
+        let config = Config::new(
+            Some("14.21.1".to_string()),
+            crate::types::utils::LanguageType::Default,
+        );
+
+        let skinlines = Skinlines::get(&config).await.unwrap();
+        let skinline = &skinlines.0[1];
+        assert_eq!(skinline.id, 1);
+        assert_eq!(skinline.name, "World Champions: 2011");
     }
 }

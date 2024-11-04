@@ -1,4 +1,4 @@
-const COMMUNITY_DRAGON_URL: &str = "https://raw.communitydragon.org/";
+const COMMUNITY_DRAGON_URL: &str = "https://raw.communitydragon.org";
 const DDRAGON_VERSIONS_URL: &str = "https://ddragon.leagueoflegends.com/api/versions.json";
 
 #[derive(Default, Debug, Clone, PartialEq)]
@@ -25,6 +25,7 @@ pub enum AssetsType {
     #[default]
     Loot,
     Skins,
+    Skinlines,
     SummonerEmotes,
     SummonerBanners,
     SummonerIcons,
@@ -38,6 +39,7 @@ impl AssetsType {
         match self {
             AssetsType::Loot => "loot.json",
             AssetsType::Skins => "skins.json",
+            AssetsType::Skinlines => "skinlines.json",
             AssetsType::SummonerEmotes => "summoner-emotes.json",
             AssetsType::SummonerBanners => "summoner-banners.json",
             AssetsType::SummonerIcons => "summoner-icons.json",
@@ -45,6 +47,20 @@ impl AssetsType {
             AssetsType::WardSkins => "ward-skins.json",
             AssetsType::WardSkinSets => "ward-skin-sets.json",
         }
+    }
+
+    pub fn to_vec() -> Vec<AssetsType> {
+        vec![
+            AssetsType::Loot,
+            AssetsType::Skins,
+            AssetsType::Skinlines,
+            AssetsType::SummonerEmotes,
+            AssetsType::SummonerBanners,
+            AssetsType::SummonerIcons,
+            AssetsType::SummonerIconSets,
+            AssetsType::WardSkins,
+            AssetsType::WardSkinSets,
+        ]
     }
 }
 
@@ -154,18 +170,7 @@ pub async fn get_latest_version() -> Result<String, reqwest::Error> {
 
 pub fn get_all_assets_urls(config: &Config) -> Vec<String> {
     let mut urls = Vec::new();
-    for assets_type in [
-        AssetsType::Loot,
-        AssetsType::Skins,
-        AssetsType::SummonerEmotes,
-        AssetsType::SummonerBanners,
-        AssetsType::SummonerIcons,
-        AssetsType::SummonerIconSets,
-        AssetsType::WardSkins,
-        AssetsType::WardSkinSets,
-    ]
-    .iter()
-    {
+    for assets_type in AssetsType::to_vec().iter() {
         urls.push(get_assets_url(
             assets_type,
             &config.language,
