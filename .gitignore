@@ -5,5 +5,5 @@
 .npmrc
 
 # Added by cargo
-
+/lol-game-data
 /target
