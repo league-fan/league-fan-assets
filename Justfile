@@ -1,3 +1,5 @@
+set dotenv-load
+
 run:
     cargo run
 
@@ -6,6 +8,9 @@ debug:
 
 test:
     cargo test
+
+test-r2:
+    cargo test r2client::tests::test_upload_file -- --exact
 
 lint:
     cargo fmt
