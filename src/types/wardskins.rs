@@ -67,6 +67,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
         let ward_skins = WardSkins::from_url(&config).await.unwrap();
         let ward_skin = &ward_skins.0[0];
@@ -79,6 +80,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
         let ward_skin_sets = WardSkinSets::from_url(&config).await.unwrap();
         let ward_skin_set = &ward_skin_sets.0[0];

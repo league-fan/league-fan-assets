@@ -1,14 +1,54 @@
+use std::{path::PathBuf, sync::Arc};
+use tokio::task::JoinHandle;
+
 use anyhow::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::middleware::FetchClient;
 
-use super::utils::{get_assets_url, AssetsTypeTrait, Config};
+use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config};
 
-pub trait CollectTasks {
-    fn collect_tasks(&self) -> Vec<impl std::future::Future<Output = Result<()>> + Send>
-    where
-        Self: Sync;
+pub trait CollectDownloadTasks {
+    fn collect_download_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>>;
+}
+
+pub trait ToDownloadTasks {
+    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>>;
+
+    fn to_download_tasks_inner(url: &str, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+        if url.trim_start().is_empty() {
+            return None;
+        }
+        let save_path = config.base_path.join(url);
+        if save_path.exists() {
+            return None;
+        }
+
+        let url = get_cdragon_url(url, &config);
+        let handle = tokio::spawn(async move {
+            FetchClient::default()
+                .get_bytes(&url)
+                .await
+                .unwrap()
+                .save_file(&save_path)
+                .await
+        });
+        Some(handle)
+    }
+}
+
+pub trait SaveFile {
+    fn save_file(
+        &self,
+        save_path: &PathBuf,
+    ) -> impl std::future::Future<Output = Result<()>> + Send;
+}
+
+impl SaveFile for Vec<u8> {
+    async fn save_file(&self, save_path: &PathBuf) -> Result<()> {
+        tokio::fs::write(save_path, self).await?;
+        Ok(())
+    }
 }
 
 pub trait FromUrl: DeserializeOwned + AssetsTypeTrait {

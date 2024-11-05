@@ -1,9 +1,12 @@
-use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 use super::{
-    common::FromUrl,
-    utils::{AssetsType, AssetsTypeTrait},
+    common::{CollectDownloadTasks, FromUrl, ToDownloadTasks},
+    utils::{AssetsType, AssetsTypeTrait, Config},
 };
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use tokio::task::JoinHandle;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -168,6 +171,78 @@ impl AssetsTypeTrait for Loot {
     }
 }
 
+impl ToDownloadTasks for LootItem {
+    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+        let config = Arc::clone(&config);
+        let image = self.image.clone();
+        let url = image.trim_start_matches('/');
+
+        Self::to_download_tasks_inner(url, config)
+    }
+}
+
+impl ToDownloadTasks for LootBundle {
+    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+        let config = Arc::clone(&config);
+        let image = self.image.clone();
+        let url = image.trim_start_matches('/');
+
+        Self::to_download_tasks_inner(url, config)
+    }
+}
+
+impl ToDownloadTasks for LootRecipe {
+    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+        let config = Arc::clone(&config);
+        let image = self.image_path.clone();
+        let url = image.trim_start_matches('/');
+
+        Self::to_download_tasks_inner(url, config)
+    }
+}
+
+impl ToDownloadTasks for LootTable {
+    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+        let config = Arc::clone(&config);
+        let image = self.image.clone();
+        let url = image.trim_start_matches('/');
+
+        Self::to_download_tasks_inner(url, config)
+    }
+}
+
+impl CollectDownloadTasks for Loot {
+    fn collect_download_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>> {
+        let mut tasks = vec![];
+
+        for item in &self.loot_items {
+            if let Some(task) = item.to_download_tasks(Arc::clone(&config)) {
+                tasks.push(task);
+            }
+        }
+
+        for bundle in &self.loot_bundles {
+            if let Some(task) = bundle.to_download_tasks(Arc::clone(&config)) {
+                tasks.push(task);
+            }
+        }
+
+        for recipe in &self.loot_recipes {
+            if let Some(task) = recipe.to_download_tasks(Arc::clone(&config)) {
+                tasks.push(task);
+            }
+        }
+
+        for table in &self.loot_tables {
+            if let Some(task) = table.to_download_tasks(Arc::clone(&config)) {
+                tasks.push(task);
+            }
+        }
+
+        return tasks;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::types::utils::Config;
@@ -179,6 +254,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
 
         let loot = Loot::from_url(&config).await.unwrap();

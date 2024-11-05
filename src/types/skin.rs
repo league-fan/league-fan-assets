@@ -189,6 +189,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
 
         let skins = Skins::from_url(&config).await.unwrap();
@@ -202,6 +203,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
 
         let skinlines = Skinlines::from_url(&config).await.unwrap();

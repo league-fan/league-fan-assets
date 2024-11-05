@@ -51,6 +51,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
         let summoner_banners = SummonerBanners::from_url(&config).await.unwrap();
         let banner_flag = &summoner_banners.banner_flags[0];

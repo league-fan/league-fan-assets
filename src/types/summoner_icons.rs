@@ -63,6 +63,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
         let summoner_icons = SummonerIcons::from_url(&config).await.unwrap();
         let icon = &summoner_icons.0[0];
@@ -76,6 +77,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
         let summoner_icon_sets = SummonerIconSets::from_url(&config).await.unwrap();
         let summoner_icon_set = &summoner_icon_sets.0[0];

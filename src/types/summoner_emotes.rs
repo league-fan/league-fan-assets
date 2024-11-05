@@ -36,6 +36,7 @@ mod tests {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
+            None,
         );
         let summoner_emotes = SummonerEmotes::from_url(&config).await.unwrap();
         let emote = &summoner_emotes.0[1];
