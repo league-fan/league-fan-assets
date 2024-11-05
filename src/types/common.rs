@@ -19,7 +19,7 @@ pub trait ToDownloadTasks {
         if url.trim_start().is_empty() {
             return None;
         }
-        let save_path = config.base_path.join(url);
+        let save_path = config.base_path.join(url.trim_start_matches('/'));
         if save_path.exists() {
             return None;
         }

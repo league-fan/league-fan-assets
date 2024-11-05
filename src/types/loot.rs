@@ -175,9 +175,8 @@ impl ToDownloadTasks for LootItem {
     fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
-        let url = image.trim_start_matches('/');
 
-        Self::to_download_tasks_inner(url, config)
+        Self::to_download_tasks_inner(&image, config)
     }
 }
 
@@ -185,9 +184,8 @@ impl ToDownloadTasks for LootBundle {
     fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
-        let url = image.trim_start_matches('/');
 
-        Self::to_download_tasks_inner(url, config)
+        Self::to_download_tasks_inner(&image, config)
     }
 }
 
@@ -195,9 +193,8 @@ impl ToDownloadTasks for LootRecipe {
     fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image_path.clone();
-        let url = image.trim_start_matches('/');
 
-        Self::to_download_tasks_inner(url, config)
+        Self::to_download_tasks_inner(&image, config)
     }
 }
 
@@ -205,9 +202,8 @@ impl ToDownloadTasks for LootTable {
     fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
-        let url = image.trim_start_matches('/');
 
-        Self::to_download_tasks_inner(url, config)
+        Self::to_download_tasks_inner(&image, config)
     }
 }
 
