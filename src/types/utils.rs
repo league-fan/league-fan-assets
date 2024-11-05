@@ -1,7 +1,17 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
+
+use log::debug;
 
 const COMMUNITY_DRAGON_URL: &str = "https://raw.communitydragon.org";
 const DDRAGON_VERSIONS_URL: &str = "https://ddragon.leagueoflegends.com/api/versions.json";
+pub static FALLBACK_CONFIG: LazyLock<Config> = LazyLock::new(|| Config {
+    version: None,
+    language: LanguageType::Default,
+    base_path: PathBuf::from("."),
+});
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Config {
@@ -181,18 +191,20 @@ pub fn get_assets_url(
 
 pub fn get_cdragon_url(ori_url: &str, config: &Config) -> String {
     // https://github.com/communitydragon/docs/blob/master/assets.md#mapping-paths-from-json-files
-    let mapped_path = ori_url.trim_start_matches("/lol-game-data/assets/");
+    let trimed_path = ori_url.trim_start_matches("/lol-game-data/assets/");
     let version = match &config.version {
         Some(version) => version.split('.').take(2).collect::<Vec<&str>>().join("."),
         None => "latest".to_string(),
     };
-    format!(
+    let mapped_path = format!(
         "{}/{}/plugins/rcp-be-lol-game-data/global/{}/{}",
         COMMUNITY_DRAGON_URL,
         version,
         config.language.as_str(),
-        mapped_path.to_lowercase()
-    )
+        trimed_path.to_lowercase()
+    );
+    debug!("Map path from {} to {}", ori_url, mapped_path);
+    mapped_path
 }
 
 pub async fn get_game_versions() -> Result<Vec<String>, reqwest::Error> {

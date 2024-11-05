@@ -1,12 +1,13 @@
+use log::{debug, warn};
 use std::{path::PathBuf, sync::Arc};
 use tokio::task::JoinHandle;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::middleware::FetchClient;
 
-use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config};
+use super::utils::{get_assets_url, AssetsTypeTrait, Config};
 
 pub trait CollectDownloadTasks {
     fn collect_download_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>>;
@@ -15,25 +16,27 @@ pub trait CollectDownloadTasks {
 pub trait ToDownloadTasks {
     fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>>;
 
-    fn to_download_tasks_inner(url: &str, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
-        if url.trim_start().is_empty() {
-            return None;
+    fn to_download_tasks_inner(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<()>>> {
+        let url = url.trim();
+        if url.is_empty() || !url.starts_with("/lol-game-data/assets/") {
+            warn!("Invalid url: {}", url);
+            return Err(anyhow!("Invalid url: {}", url));
         }
         let save_path = config.base_path.join(url.trim_start_matches('/'));
         if save_path.exists() {
-            return None;
+            debug!("File exists: {:?}", save_path);
+            return Err(anyhow!("File exists: {:?}", save_path));
         }
 
-        let url = get_cdragon_url(url, &config);
+        let url_clone = url.to_string();
         let handle = tokio::spawn(async move {
             FetchClient::default()
-                .get_bytes(&url)
-                .await
-                .unwrap()
+                .get_bytes(&url_clone, &config)
+                .await?
                 .save_file(&save_path)
                 .await
         });
-        Some(handle)
+        Ok(handle)
     }
 }
 
@@ -46,8 +49,19 @@ pub trait SaveFile {
 
 impl SaveFile for Vec<u8> {
     async fn save_file(&self, save_path: &PathBuf) -> Result<()> {
-        tokio::fs::write(save_path, self).await?;
-        Ok(())
+        let parent = save_path.parent().ok_or_else(|| anyhow!("Invalid path"))?;
+        if !parent.exists() {
+            tokio::fs::create_dir_all(parent)
+                .await
+                .map_err(|e| anyhow!("Failed to create dir: {:?}, {}", parent, e))?;
+        }
+        tokio::fs::write(save_path, self)
+            .await
+            .map_err(|e| e.into())
+            .and_then(|_| {
+                debug!("Save file: {:?}", save_path);
+                Ok(())
+            })
     }
 }
 
@@ -59,7 +73,6 @@ pub trait FromUrl: DeserializeOwned + AssetsTypeTrait {
         async {
             let assets_type = Self::assets_type(); // 使用 Self 调用关联函数
             let url = get_assets_url(&assets_type, &config.language, &config.version);
-            eprintln!("url: {}", url);
             FetchClient::default()
                 .get(&url)
                 .await?

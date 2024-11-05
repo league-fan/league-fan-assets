@@ -5,6 +5,7 @@ use super::{
     utils::{AssetsType, AssetsTypeTrait, Config},
 };
 use anyhow::Result;
+use log::error;
 use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
 
@@ -176,7 +177,13 @@ impl ToDownloadTasks for LootItem {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
-        Self::to_download_tasks_inner(&image, config)
+        match Self::to_download_tasks_inner(&image, config) {
+            Ok(task) => Some(task),
+            Err(e) => {
+                error!("❌ Failed to download: {:?} - {}", e, self.name);
+                None
+            }
+        }
     }
 }
 
@@ -185,7 +192,13 @@ impl ToDownloadTasks for LootBundle {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
-        Self::to_download_tasks_inner(&image, config)
+        match Self::to_download_tasks_inner(&image, config) {
+            Ok(task) => Some(task),
+            Err(e) => {
+                error!("❌ Failed to download: {:?} - {}", e, self.description);
+                None
+            }
+        }
     }
 }
 
@@ -194,7 +207,13 @@ impl ToDownloadTasks for LootRecipe {
         let config = Arc::clone(&config);
         let image = self.image_path.clone();
 
-        Self::to_download_tasks_inner(&image, config)
+        match Self::to_download_tasks_inner(&image, config) {
+            Ok(task) => Some(task),
+            Err(e) => {
+                error!("❌ Failed to download: {:?} - {}", e, self.description);
+                None
+            }
+        }
     }
 }
 
@@ -203,7 +222,13 @@ impl ToDownloadTasks for LootTable {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
-        Self::to_download_tasks_inner(&image, config)
+        match Self::to_download_tasks_inner(&image, config) {
+            Ok(task) => Some(task),
+            Err(e) => {
+                error!("❌ Failed to download: {:?} - {}", e, self.description);
+                None
+            }
+        }
     }
 }
 
