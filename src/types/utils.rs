@@ -34,6 +34,10 @@ pub enum AssetsType {
     WardSkinSets,
 }
 
+pub trait AssetsTypeTrait {
+    fn assets_type() -> AssetsType;
+}
+
 impl AssetsType {
     pub fn as_str(&self) -> &'static str {
         match self {

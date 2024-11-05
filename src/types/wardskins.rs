@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    common::{Rarity, RegionEnum},
-    utils::{get_assets_url, AssetsType, Config},
+    common::{FromUrl, Rarity, RegionEnum},
+    utils::{AssetsType, AssetsTypeTrait},
 };
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WardSkins(pub Vec<WardSkin>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -26,6 +28,7 @@ pub struct RegionalDescription {
     pub description: String,
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WardSkinSets(pub Vec<WardSkinSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -38,24 +41,25 @@ pub struct WardSkinSet {
     pub wards: Vec<i64>,
 }
 
-impl WardSkins {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(&AssetsType::WardSkins, &config.language, &config.version);
-        let body = reqwest::get(&url).await?.json::<Vec<WardSkin>>().await?;
-        Ok(WardSkins(body))
+impl FromUrl for WardSkins {}
+impl FromUrl for WardSkinSets {}
+
+impl AssetsTypeTrait for WardSkins {
+    fn assets_type() -> AssetsType {
+        AssetsType::WardSkins
     }
 }
 
-impl WardSkinSets {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(&AssetsType::WardSkinSets, &config.language, &config.version);
-        let body = reqwest::get(&url).await?.json::<Vec<WardSkinSet>>().await?;
-        Ok(WardSkinSets(body))
+impl AssetsTypeTrait for WardSkinSets {
+    fn assets_type() -> AssetsType {
+        AssetsType::WardSkinSets
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::utils::Config;
+
     use super::*;
 
     #[tokio::test]
@@ -64,7 +68,7 @@ mod tests {
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        let ward_skins = WardSkins::get(&config).await.unwrap();
+        let ward_skins = WardSkins::from_url(&config).await.unwrap();
         let ward_skin = &ward_skins.0[0];
         assert_eq!(ward_skin.id, 0);
         assert_eq!(ward_skin.name, "Default Ward");
@@ -76,7 +80,7 @@ mod tests {
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        let ward_skin_sets = WardSkinSets::get(&config).await.unwrap();
+        let ward_skin_sets = WardSkinSets::from_url(&config).await.unwrap();
         let ward_skin_set = &ward_skin_sets.0[0];
         assert_eq!(ward_skin_set.id, 10);
         assert_eq!(ward_skin_set.display_name, "Harrowing");

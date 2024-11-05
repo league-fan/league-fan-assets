@@ -39,7 +39,7 @@ async fn save_file(path: &Path, content: &[u8]) -> tokio::io::Result<()> {
 async fn main() {
     let config = Arc::new(Config::new(None, LanguageType::ChineseChina));
 
-    let loot = Loot::get(&config).await.unwrap();
+    let loot = Loot::from_url(config.as_ref()).await.unwrap();
     let chest = loot
         .loot_items
         .iter()

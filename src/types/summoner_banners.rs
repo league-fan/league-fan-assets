@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use super::utils::{get_assets_url, AssetsType, Config};
+use super::{
+    common::FromUrl,
+    utils::{AssetsType, AssetsTypeTrait},
+};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,20 +32,18 @@ pub struct BannerFrame {
     pub inventory_icon: String,
 }
 
-impl SummonerBanners {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(
-            &AssetsType::SummonerBanners,
-            &config.language,
-            &config.version,
-        );
-        let body = reqwest::get(&url).await?.json::<SummonerBanners>().await?;
-        Ok(body)
+impl FromUrl for SummonerBanners {}
+
+impl AssetsTypeTrait for SummonerBanners {
+    fn assets_type() -> AssetsType {
+        AssetsType::SummonerBanners
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::utils::Config;
+
     use super::*;
 
     #[tokio::test]
@@ -51,7 +52,7 @@ mod tests {
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        let summoner_banners = SummonerBanners::get(&config).await.unwrap();
+        let summoner_banners = SummonerBanners::from_url(&config).await.unwrap();
         let banner_flag = &summoner_banners.banner_flags[0];
         let banner_frame = &summoner_banners.banner_frames[0];
         assert_eq!(banner_flag.level, 1);

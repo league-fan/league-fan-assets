@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    common::{Description, Rarity},
-    utils::{get_assets_url, AssetsType, Config},
+    common::{Description, FromUrl, Rarity},
+    utils::{AssetsType, AssetsTypeTrait},
 };
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SummonerIcons(pub Vec<SummonerIcon>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -23,6 +24,7 @@ pub struct SummonerIcon {
     pub esports_event: Option<String>,
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SummonerIconSets(pub Vec<SummonerIconSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -35,38 +37,25 @@ pub struct SummonerIconSet {
     pub icons: Vec<i64>,
 }
 
-impl SummonerIcons {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(
-            &AssetsType::SummonerIcons,
-            &config.language,
-            &config.version,
-        );
-        let body = reqwest::get(&url)
-            .await?
-            .json::<Vec<SummonerIcon>>()
-            .await?;
-        Ok(SummonerIcons(body))
+impl FromUrl for SummonerIcons {}
+impl FromUrl for SummonerIconSets {}
+
+impl AssetsTypeTrait for SummonerIcons {
+    fn assets_type() -> AssetsType {
+        AssetsType::SummonerIcons
     }
 }
 
-impl SummonerIconSets {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(
-            &AssetsType::SummonerIconSets,
-            &config.language,
-            &config.version,
-        );
-        let body = reqwest::get(&url)
-            .await?
-            .json::<Vec<SummonerIconSet>>()
-            .await?;
-        Ok(SummonerIconSets(body))
+impl AssetsTypeTrait for SummonerIconSets {
+    fn assets_type() -> AssetsType {
+        AssetsType::SummonerIconSets
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::utils::Config;
+
     use super::*;
 
     #[tokio::test]
@@ -75,7 +64,7 @@ mod tests {
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        let summoner_icons = SummonerIcons::get(&config).await.unwrap();
+        let summoner_icons = SummonerIcons::from_url(&config).await.unwrap();
         let icon = &summoner_icons.0[0];
         assert_eq!(icon.id, 0);
         assert_eq!(icon.title, "Blue Minion Bruiser Icon");
@@ -88,7 +77,7 @@ mod tests {
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        let summoner_icon_sets = SummonerIconSets::get(&config).await.unwrap();
+        let summoner_icon_sets = SummonerIconSets::from_url(&config).await.unwrap();
         let summoner_icon_set = &summoner_icon_sets.0[0];
         assert_eq!(summoner_icon_set.id, 100);
         assert_eq!(summoner_icon_set.hidden, false);

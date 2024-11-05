@@ -4,10 +4,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use super::{
-    common::{Description, Rarity, RarityEnum},
-    utils::{get_assets_url, AssetsType, Config},
+    common::{Description, FromUrl, Rarity, RarityEnum},
+    utils::{AssetsType, AssetsTypeTrait},
 };
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Skins(pub HashMap<String, Skin>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -150,17 +151,9 @@ pub enum SkinType {
     Ultimate,
 }
 
-impl Skins {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(&AssetsType::Skins, &config.language, &config.version);
-        let body = reqwest::get(&url)
-            .await?
-            .json::<HashMap<String, Skin>>()
-            .await?;
-        Ok(Skins(body))
-    }
-}
+impl FromUrl for Skins {}
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Skinlines(pub Vec<Skinline>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -171,16 +164,24 @@ pub struct Skinline {
     description: String,
 }
 
-impl Skinlines {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(&AssetsType::Skinlines, &config.language, &config.version);
-        let body = reqwest::get(&url).await?.json::<Vec<Skinline>>().await?;
-        Ok(Skinlines(body))
+impl FromUrl for Skinlines {}
+
+impl AssetsTypeTrait for Skins {
+    fn assets_type() -> AssetsType {
+        AssetsType::Skins
+    }
+}
+
+impl AssetsTypeTrait for Skinlines {
+    fn assets_type() -> AssetsType {
+        AssetsType::Skinlines
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::utils::Config;
+
     use super::*;
 
     #[tokio::test]
@@ -190,7 +191,7 @@ mod tests {
             crate::types::utils::LanguageType::Default,
         );
 
-        let skins = Skins::get(&config).await.unwrap();
+        let skins = Skins::from_url(&config).await.unwrap();
         let skin = skins.0.get("1000").unwrap();
         assert_eq!(skin.id, 1000);
         assert_eq!(skin.name, "Annie");
@@ -203,7 +204,7 @@ mod tests {
             crate::types::utils::LanguageType::Default,
         );
 
-        let skinlines = Skinlines::get(&config).await.unwrap();
+        let skinlines = Skinlines::from_url(&config).await.unwrap();
         let skinline = &skinlines.0[1];
         assert_eq!(skinline.id, 1);
         assert_eq!(skinline.name, "World Champions: 2011");

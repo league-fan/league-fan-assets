@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use super::utils::{get_assets_url, AssetsType, Config};
+use super::{
+    common::FromUrl,
+    utils::{AssetsType, AssetsTypeTrait},
+};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -157,43 +160,28 @@ pub struct LootTokenBankCard {
     pub store_link_type: String,
 }
 
-impl Loot {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(&AssetsType::Loot, &config.language, &config.version);
-        let body = reqwest::get(&url).await?.json::<Self>().await?;
-        Ok(body)
+impl FromUrl for Loot {}
+
+impl AssetsTypeTrait for Loot {
+    fn assets_type() -> AssetsType {
+        AssetsType::Loot
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::utils::Config;
+
     use super::*;
 
-    // Deserialize the loot.json file into a Loot struct and compare the id of the first loot item
     #[tokio::test]
     async fn test_loot() {
         let config = Config::new(
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        // {
-        //     "LootItems": [
-        //       {
-        //         "id": "STATSTONE_SHARD_66600132",
-        //         "name": "Warwick - Series 1",
-        //         "description": "Unlock Series 1 Eternals for Warwick.",
-        //         "image": "",
-        //         "startDate": "",
-        //         "endDate": "",
-        //         "mappedStoreId": 0,
-        //         "lifetimeMax": 0,
-        //         "autoRedeem": true,
-        //         "rarity": "Default",
-        //         "type": "Statstone_Shard"
-        //       }
-        //     ]
-        // }
-        let loot = Loot::get(&config).await.unwrap();
+
+        let loot = Loot::from_url(&config).await.unwrap();
         assert_eq!(loot.loot_items[0].id, "STATSTONE_SHARD_66600132");
         assert_eq!(loot.loot_items[0].name, "Warwick - Series 1");
     }

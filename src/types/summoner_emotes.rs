@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use super::utils::{get_assets_url, AssetsType, Config};
+use super::{
+    common::FromUrl,
+    utils::{AssetsType, AssetsTypeTrait},
+};
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SummonerEmotes(pub Vec<SummonerEmote>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -13,23 +17,18 @@ pub struct SummonerEmote {
     pub description: String,
 }
 
-impl SummonerEmotes {
-    pub async fn get(config: &Config) -> Result<Self, reqwest::Error> {
-        let url = get_assets_url(
-            &AssetsType::SummonerEmotes,
-            &config.language,
-            &config.version,
-        );
-        let body = reqwest::get(&url)
-            .await?
-            .json::<Vec<SummonerEmote>>()
-            .await?;
-        Ok(SummonerEmotes(body))
+impl FromUrl for SummonerEmotes {}
+
+impl AssetsTypeTrait for SummonerEmotes {
+    fn assets_type() -> AssetsType {
+        AssetsType::SummonerEmotes
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::utils::Config;
+
     use super::*;
 
     #[tokio::test]
@@ -38,7 +37,7 @@ mod tests {
             Some("14.21.1".to_string()),
             crate::types::utils::LanguageType::Default,
         );
-        let summoner_emotes = SummonerEmotes::get(&config).await.unwrap();
+        let summoner_emotes = SummonerEmotes::from_url(&config).await.unwrap();
         let emote = &summoner_emotes.0[1];
         assert_eq!(emote.id, 10);
         assert_eq!(emote.name, "Mastery 10+");
