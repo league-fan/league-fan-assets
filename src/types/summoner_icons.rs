@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::preludes::{AssetsTask, CollecTasks, ToTasks};
+
 use super::{
     common::{Description, Rarity},
     common_trait::FromUrl,
@@ -50,6 +52,33 @@ impl AssetsTypeTrait for SummonerIcons {
 impl AssetsTypeTrait for SummonerIconSets {
     fn assets_type() -> AssetsType {
         AssetsType::SummonerIconSets
+    }
+}
+
+impl ToTasks for SummonerIcon {
+    fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        if let Some(path) = self.image_path.clone() {
+            let task = AssetsTask::from_path_config(&path, &config);
+            tasks.push(task);
+        }
+        tasks
+    }
+}
+
+impl CollecTasks for SummonerIcons {
+    fn collect_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks: Vec<AssetsTask> = vec![];
+        for item in &self.0 {
+            tasks.extend(item.to_tasks(config.clone()));
+        }
+        tasks
+    }
+}
+
+impl CollecTasks for SummonerIconSets {
+    fn collect_tasks(&self, _config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        vec![]
     }
 }
 

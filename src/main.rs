@@ -11,8 +11,8 @@ async fn main() {
         .unwrap();
     let config = Arc::new(Config::new(None, LanguageType::ChineseChina, None));
 
-    let loot = Loot::from_url(config.as_ref()).await.unwrap();
-    let handles = loot.collect_tasks(config);
+    let summoner_icons = SummonerIcons::from_url(config.as_ref()).await.unwrap();
+    let handles = summoner_icons.collect_tasks(config);
     let client = DownloadClient::default();
     let mut join_handles = vec![];
 
