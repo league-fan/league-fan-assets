@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::{
-    common::{CollectDownloadTasks, FromUrl, ToDownloadTasks},
+    common::{CollecTasks, FromUrl, ToTask},
     utils::{AssetsType, AssetsTypeTrait, Config},
 };
 use anyhow::Result;
@@ -172,12 +172,12 @@ impl AssetsTypeTrait for Loot {
     }
 }
 
-impl ToDownloadTasks for LootItem {
-    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+impl ToTask for LootItem {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
-        match Self::to_download_tasks_inner(&image, config) {
+        match Self::to_edge_task(&image, config) {
             Ok(task) => Some(task),
             Err(e) => {
                 error!("❌ Failed to download: {:?} - {}", e, self.name);
@@ -187,12 +187,12 @@ impl ToDownloadTasks for LootItem {
     }
 }
 
-impl ToDownloadTasks for LootBundle {
-    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+impl ToTask for LootBundle {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
-        match Self::to_download_tasks_inner(&image, config) {
+        match Self::to_edge_task(&image, config) {
             Ok(task) => Some(task),
             Err(e) => {
                 error!("❌ Failed to download: {:?} - {}", e, self.description);
@@ -202,12 +202,12 @@ impl ToDownloadTasks for LootBundle {
     }
 }
 
-impl ToDownloadTasks for LootRecipe {
-    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+impl ToTask for LootRecipe {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image_path.clone();
 
-        match Self::to_download_tasks_inner(&image, config) {
+        match Self::to_edge_task(&image, config) {
             Ok(task) => Some(task),
             Err(e) => {
                 error!("❌ Failed to download: {:?} - {}", e, self.description);
@@ -217,12 +217,12 @@ impl ToDownloadTasks for LootRecipe {
     }
 }
 
-impl ToDownloadTasks for LootTable {
-    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+impl ToTask for LootTable {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
-        match Self::to_download_tasks_inner(&image, config) {
+        match Self::to_edge_task(&image, config) {
             Ok(task) => Some(task),
             Err(e) => {
                 error!("❌ Failed to download: {:?} - {}", e, self.description);
@@ -232,30 +232,30 @@ impl ToDownloadTasks for LootTable {
     }
 }
 
-impl CollectDownloadTasks for Loot {
-    fn collect_download_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>> {
+impl CollecTasks for Loot {
+    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>> {
         let mut tasks = vec![];
 
         for item in &self.loot_items {
-            if let Some(task) = item.to_download_tasks(Arc::clone(&config)) {
+            if let Some(task) = item.to_task(Arc::clone(&config)) {
                 tasks.push(task);
             }
         }
 
         for bundle in &self.loot_bundles {
-            if let Some(task) = bundle.to_download_tasks(Arc::clone(&config)) {
+            if let Some(task) = bundle.to_task(Arc::clone(&config)) {
                 tasks.push(task);
             }
         }
 
         for recipe in &self.loot_recipes {
-            if let Some(task) = recipe.to_download_tasks(Arc::clone(&config)) {
+            if let Some(task) = recipe.to_task(Arc::clone(&config)) {
                 tasks.push(task);
             }
         }
 
         for table in &self.loot_tables {
-            if let Some(task) = table.to_download_tasks(Arc::clone(&config)) {
+            if let Some(task) = table.to_task(Arc::clone(&config)) {
                 tasks.push(task);
             }
         }

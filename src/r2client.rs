@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use log::{error, info};
 use reqwest::Client;
 use serde::Serialize;
 
@@ -15,15 +16,15 @@ struct UploadRequest {
 }
 
 impl R2Client {
-    pub fn from_env() -> Self {
-        let worker_url = std::env::var("R2_WORKER_URL").expect("R2_WORKER_URL is not set");
-        let token = std::env::var("R2_TOKEN").expect("R2_TOKEN is not set");
+    pub fn try_from_env() -> Result<Self> {
+        let worker_url = std::env::var("R2_WORKER_URL")?;
+        let token = std::env::var("R2_TOKEN")?;
         let client = Client::new();
-        R2Client {
+        Ok(R2Client {
             client,
             worker_url,
             token,
-        }
+        })
     }
 
     pub async fn upload_file(&self, download_url: &str, name: &str) -> Result<()> {
@@ -43,9 +44,10 @@ impl R2Client {
         let status = response.status();
         let text = response.text().await?;
         if status.is_success() {
-            println!("Upload success: {}", text);
+            info!("Upload success: {} {}", status.as_u16(), text);
             Ok(())
         } else {
+            error!("Upload failed: {} {}", status.as_u16(), text);
             Err(anyhow!("Upload failed: {} {}", status.as_u16(), text))
         }
     }
@@ -67,9 +69,10 @@ impl R2Client {
         let status = response.status();
         let text = response.text().await?;
         if status.is_success() {
-            println!("Delete success: {}", text);
+            info!("Delete success: {} {}", status.as_u16(), text);
             Ok(())
         } else {
+            error!("Delete failed: {} {}", status.as_u16(), text);
             Err(anyhow!("Delete failed: {} {}", status.as_u16(), text))
         }
     }
@@ -87,7 +90,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_upload_file_fail_to_download() {
-        let client = R2Client::from_env();
+        let client = R2Client::try_from_env().unwrap();
         let download_url = INVALID_URL;
         let name = "test_unreachable.png";
         let result = client.upload_file(download_url, name).await;
@@ -100,7 +103,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_upload_file_already_exist() {
-        let client = R2Client::from_env();
+        let client = R2Client::try_from_env().unwrap();
         let download_url = VALID_URL;
         let name = "test_exist.png";
         let result = client.upload_file(download_url, name).await;
@@ -110,7 +113,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_upload_file_and_delete() {
-        let client = R2Client::from_env();
+        let client = R2Client::try_from_env().unwrap();
         let download_url = VALID_URL;
         let name = "test_success.png";
         let result = client.upload_file(download_url, name).await;
@@ -122,7 +125,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_file_not_exist() {
-        let client = R2Client::from_env();
+        let client = R2Client::try_from_env().unwrap();
         let name = "test_not_exist.png";
         let result = client.delete_file(name).await;
         assert!(result.is_err());

@@ -12,7 +12,7 @@ async fn main() {
     let config = Arc::new(Config::new(None, LanguageType::ChineseChina, None));
 
     let loot = Loot::from_url(config.as_ref()).await.unwrap();
-    let handles = loot.collect_download_tasks(config);
+    let handles = loot.collect_tasks(config);
     for handle in handles {
         match handle.await {
             Ok(result) => match result {

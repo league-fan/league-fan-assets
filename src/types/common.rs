@@ -5,18 +5,33 @@ use tokio::task::JoinHandle;
 use anyhow::{anyhow, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::middleware::FetchClient;
+use crate::{middleware::FetchClient, r2client::R2Client};
 
-use super::utils::{get_assets_url, AssetsTypeTrait, Config};
+use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config};
 
-pub trait CollectDownloadTasks {
-    fn collect_download_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>>;
+pub trait CollecTasks {
+    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>>;
 }
 
-pub trait ToDownloadTasks {
-    fn to_download_tasks(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>>;
+pub trait ToTask {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>>;
 
-    fn to_download_tasks_inner(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<()>>> {
+    fn to_edge_task(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<()>>> {
+        let url = url.trim().to_string();
+        if url.is_empty() || !url.starts_with("/lol-game-data/assets/") {
+            warn!("Invalid url: {}", url);
+            return Err(anyhow!("Invalid url: {}", url));
+        }
+        let name = url.clone().trim_start_matches('/').to_string();
+        let download_url = get_cdragon_url(&url, &config);
+
+        let r2 = R2Client::try_from_env()?;
+        let handle = tokio::spawn(async move { r2.upload_file(&download_url, &name).await });
+
+        Ok(handle)
+    }
+
+    fn to_download_task(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<()>>> {
         let url = url.trim();
         if url.is_empty() || !url.starts_with("/lol-game-data/assets/") {
             warn!("Invalid url: {}", url);
