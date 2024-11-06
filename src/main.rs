@@ -1,9 +1,6 @@
 use std::sync::Arc;
 
-use league_fan_assets::{
-    preludes::*,
-    types::summoner_banners,
-};
+use league_fan_assets::{preludes::*, types::summoner_banners};
 use log::{error, info};
 
 fn init_logger() {
@@ -17,22 +14,27 @@ fn init_logger() {
 async fn collect_tasks(config: Arc<Config>) -> Vec<AssetsTask> {
     let mut handles = Vec::new();
 
+    handles.push(SummonerIcons::to_task(config.clone()));
     let summoner_icons = SummonerIcons::from_url(config.as_ref())
         .await
         .expect("summoner_icons");
     handles.extend(summoner_icons.collect_tasks(config.clone()));
 
-    let summoner_banners = summoner_banners::SummonerBanners::from_url(config.as_ref())
+    handles.push(SummonerBanners::to_task(config.clone()));
+    let summoner_banners = SummonerBanners::from_url(config.as_ref())
         .await
         .expect("summoner_banners");
     handles.extend(summoner_banners.collect_tasks(config.clone()));
 
+    handles.push(Loot::to_task(config.clone()));
     let loot = Loot::from_url(config.as_ref()).await.expect("loot");
     handles.extend(loot.collect_tasks(config.clone()));
 
+    handles.push(Skins::to_task(config.clone()));
     let skins = Skins::from_url(config.as_ref()).await.expect("skins");
     handles.extend(skins.collect_tasks(config.clone()));
 
+    handles.push(WardSkins::to_task(config.clone()));
     let wardskins = WardSkins::from_url(config.as_ref())
         .await
         .expect("wardskins");
@@ -47,7 +49,7 @@ async fn main() {
 
     let config = Arc::new(Config::new(None, LanguageType::ChineseChina, None));
     let handles = collect_tasks(config.clone()).await;
-    let client = DownloadClient::default();
+    let client = R2Client::default();
     let join_handles: Vec<_> = handles
         .into_iter()
         .map(|handle| {

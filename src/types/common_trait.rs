@@ -44,4 +44,10 @@ pub trait FromUrl: DeserializeOwned + AssetsTypeTrait {
                 .map_err(|e| e.into())
         }
     }
+
+    fn to_task(config: Arc<Config>) -> AssetsTask {
+        let assets_type = Self::assets_type();
+        let url = get_assets_url(&assets_type, &config.language, &config.version);
+        AssetsTask::new(url, None, assets_type.as_str().to_string())
+    }
 }
