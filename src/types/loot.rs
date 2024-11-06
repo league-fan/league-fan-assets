@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use crate::error::LfaError;
+use crate::{error::LfaError, preludes::{AssetsTask, CollecTasks, ToTasks}};
 
 use super::{
-    common::{CollecTasks, FromUrl, ToTask},
-    utils::{AssetsType, AssetsTypeTrait, Config},
+    common_trait::FromUrl,
+    utils::{get_cdragon_url, AssetsType, AssetsTypeTrait, Config, FALLBACK_CONFIG},
 };
 use anyhow::Result;
 use log::error;
@@ -174,95 +174,62 @@ impl AssetsTypeTrait for Loot {
     }
 }
 
-impl ToTask for LootItem {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
-        let config = Arc::clone(&config);
-        let image = self.image.clone();
-
-        match Self::to_edge_task(&image, config) {
-            Ok(task) => Some(task),
-            Err(e) => {
-                error!("❌ Failed to download: {:?} - {}", e, self.name);
-                None
-            }
-        }
+impl ToTasks for LootItem {
+    fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        let path = self.image.clone();
+        let task = AssetsTask::from_path_config(&path, &config);
+        tasks.push(task);
+        tasks
     }
 }
 
-impl ToTask for LootBundle {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
-        let config = Arc::clone(&config);
-        let image = self.image.clone();
-
-        match Self::to_edge_task(&image, config) {
-            Ok(task) => Some(task),
-            Err(e) => {
-                error!("❌ Failed to download: {:?} - {}", e, self.description);
-                None
-            }
-        }
+impl ToTasks for LootRecipe {
+    fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        let path = self.image_path.clone();
+        let task = AssetsTask::from_path_config(&path, &config);
+        tasks.push(task);
+        tasks
     }
 }
 
-impl ToTask for LootRecipe {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
-        let config = Arc::clone(&config);
-        let image = self.image_path.clone();
-
-        match Self::to_edge_task(&image, config) {
-            Ok(task) => Some(task),
-            Err(e) => {
-                error!("❌ Failed to download: {:?} - {}", e, self.description);
-                None
-            }
-        }
+impl ToTasks for LootTable {
+    fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        let path = self.image.clone();
+        let task = AssetsTask::from_path_config(&path, &config);
+        tasks.push(task);
+        tasks
     }
 }
 
-impl ToTask for LootTable {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
-        let config = Arc::clone(&config);
-        let image = self.image.clone();
-
-        match Self::to_edge_task(&image, config) {
-            Ok(task) => Some(task),
-            Err(e) => {
-                error!("❌ Failed to download: {:?} - {}", e, self.description);
-                None
-            }
-        }
+impl ToTasks for LootBundle {
+    fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        let path = self.image.clone();
+        let task = AssetsTask::from_path_config(&path, &config);
+        tasks.push(task);
+        tasks
     }
 }
 
 impl CollecTasks for Loot {
-    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<(), LfaError>>> {
+    fn collect_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
         let mut tasks = vec![];
-
         for item in &self.loot_items {
-            if let Some(task) = item.to_task(Arc::clone(&config)) {
-                tasks.push(task);
-            }
+            tasks.extend(item.to_tasks(config.clone()));
         }
-
-        for bundle in &self.loot_bundles {
-            if let Some(task) = bundle.to_task(Arc::clone(&config)) {
-                tasks.push(task);
-            }
-        }
-
         for recipe in &self.loot_recipes {
-            if let Some(task) = recipe.to_task(Arc::clone(&config)) {
-                tasks.push(task);
-            }
+            tasks.extend(recipe.to_tasks(config.clone()));
         }
-
         for table in &self.loot_tables {
-            if let Some(task) = table.to_task(Arc::clone(&config)) {
-                tasks.push(task);
-            }
+            tasks.extend(table.to_tasks(config.clone()));
         }
-
-        return tasks;
+        for bundle in &self.loot_bundles {
+            tasks.extend(bundle.to_tasks(config.clone()));
+        }
+        tasks
     }
 }
 

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use league_fan_assets::types::preludes::*;
+use league_fan_assets::preludes::*;
 use log::error;
 #[tokio::main(flavor = "multi_thread", worker_threads = 3)]
 async fn main() {
@@ -13,13 +13,19 @@ async fn main() {
 
     let loot = Loot::from_url(config.as_ref()).await.unwrap();
     let handles = loot.collect_tasks(config);
+    let client = DownloadClient::default();
+    let mut join_handles = vec![];
+
     for handle in handles {
-        match handle.await {
-            Ok(result) => match result {
-                Ok(_) => {}
-                Err(e) => error!("❌ Failed to download: {:?}", e),
-            },
-            Err(e) => error!("❌ Task join error: {:?}", e),
-        }
+        let client = client.clone();
+        let join_handle = tokio::spawn(async move {
+            if let Err(e) = client.do_task(&handle).await {
+                error!("Error: {}", e);
+            }
+        });
+        join_handles.push(join_handle);
+    }
+    for join_handle in join_handles {
+        join_handle.await.unwrap();
     }
 }

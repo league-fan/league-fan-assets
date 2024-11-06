@@ -1,6 +1,6 @@
 pub mod common;
+pub mod common_trait;
 pub mod loot;
-pub mod preludes;
 pub mod skin;
 pub mod summoner_banners;
 pub mod summoner_emotes;

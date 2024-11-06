@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    common::{Description, FromUrl, Rarity},
+    common::{Description, Rarity},
+    common_trait::FromUrl,
     utils::{AssetsType, AssetsTypeTrait},
 };
 

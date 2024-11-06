@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    common::FromUrl,
+    common_trait::FromUrl,
     utils::{AssetsType, AssetsTypeTrait},
 };
 

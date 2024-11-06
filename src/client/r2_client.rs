@@ -1,31 +1,55 @@
 use anyhow::Result;
 use log::{info, warn};
+use reqwest::Response;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use serde::Serialize;
 
 use crate::error::LfaError;
 
+use super::{
+    client_trait::{AssetsTask, ClientTrait},
+    fetch_client::FetchClient,
+};
+
+#[derive(Debug, Clone)]
 pub struct R2Client {
-    client: ClientWithMiddleware,
+    client: FetchClient,
     worker_url: String,
     token: String,
 }
 
 #[derive(Serialize)]
-struct UploadRequest {
-    url: String,
+pub struct UploadRequest {
+    url: Option<String>,
     name: String,
+}
+
+impl ClientTrait for R2Client {
+    fn default() -> Self {
+        Self::try_from_env().unwrap()
+    }
+
+    async fn do_task(&self, task: &AssetsTask) -> Result<(), crate::error::LfaError> {
+        let url = task.url.clone();
+        let name = task.path.trim_start_matches('/').to_string();
+        let resp = self.upload_file(&url, &name).await?;
+        // when get 500 internal server error, try fallback url
+        if resp.status().as_u16() == 500 && task.fallback_url.is_some() {
+            info!("File not found, try fallback: {}", url);
+            let fallback_url = task.fallback_url.as_ref().unwrap();
+            self.upload_file(fallback_url, &name).await?;
+        }
+
+        Ok(())
+    }
 }
 
 impl R2Client {
     pub fn try_from_env() -> Result<Self> {
         let worker_url = std::env::var("R2_WORKER_URL")?;
         let token = std::env::var("R2_TOKEN")?;
-        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
-        let client = ClientBuilder::new(reqwest::Client::new())
-            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
-            .build();
+        let client = FetchClient::default();
         Ok(R2Client {
             client,
             worker_url,
@@ -33,69 +57,38 @@ impl R2Client {
         })
     }
 
-    pub async fn upload_file(&self, download_url: &str, name: &str) -> Result<(), LfaError> {
+    pub async fn upload_file(&self, url: &str, name: &str) -> Result<Response, LfaError> {
         let endpoint = format!("{}/fetchSave", self.worker_url);
-        let request_body = UploadRequest {
-            url: download_url.to_string(),
+
+        let mut heades = reqwest::header::HeaderMap::new();
+        heades.insert("Content-Type", "application/json".parse().unwrap());
+        heades.insert(
+            "Authorization",
+            format!("Bearer {}", self.token).parse().unwrap(),
+        );
+        let body = serde_json::to_string(&UploadRequest {
+            url: Some(url.to_string()),
             name: name.to_string(),
-        };
+        })?;
 
-        let response = self
-            .client
-            .post(endpoint)
-            .header("Authorization", format!("Bearer {}", self.token))
-            .body(serde_json::to_string(&request_body)?)
-            .send()
-            .await?;
-        let status = response.status();
-        let text = response.text().await?;
-
-        match status {
-            s if s.is_success() => {
-                info!("Upload success: {} {}", status.as_u16(), text);
-                Ok(())
-            }
-            s if s.as_u16() == 409 => {
-                warn!("Upload failed: {} {}", status.as_u16(), text);
-                Err(LfaError::FileExists(text))
-            }
-            _ => {
-                warn!("Upload failed: {} {}", status.as_u16(), text);
-                Err(LfaError::UploadFailed(status.as_u16(), text))
-            }
-        }
+        self.client.post(&endpoint, heades, body).await
     }
 
-    pub async fn delete_file(&self, name: &str) -> Result<(), LfaError> {
+    pub async fn delete_file(&self, name: &str) -> Result<Response, LfaError> {
         let endpoint = format!("{}/delete", self.worker_url);
-        let request_body = UploadRequest {
-            url: "".to_string(),
-            name: name.to_string(),
-        };
 
-        let response = self
-            .client
-            .post(endpoint)
-            .header("Authorization", format!("Bearer {}", self.token))
-            .body(serde_json::to_string(&request_body)?)
-            .send()
-            .await?;
-        let status = response.status();
-        let text = response.text().await?;
-        match status {
-            s if s.is_success() => {
-                info!("Delete success: {} {}", status.as_u16(), text);
-                Ok(())
-            }
-            s if s.as_u16() == 404 => {
-                warn!("Delete failed: {} {}", status.as_u16(), text);
-                Err(LfaError::FileNotExists(text))
-            }
-            _ => {
-                warn!("Delete failed: {} {}", status.as_u16(), text);
-                Err(LfaError::UploadFailed(status.as_u16(), text))
-            }
-        }
+        let mut heades = reqwest::header::HeaderMap::new();
+        heades.insert("Content-Type", "application/json".parse().unwrap());
+        heades.insert(
+            "Authorization",
+            format!("Bearer {}", self.token).parse().unwrap(),
+        );
+        let body = serde_json::to_string(&UploadRequest {
+            url: None,
+            name: name.to_string(),
+        })?;
+
+        self.client.post(&endpoint, heades, body).await
     }
 }
 
