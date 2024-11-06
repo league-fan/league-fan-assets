@@ -49,7 +49,7 @@ impl FetchClient {
             .headers(headers)
             .body(body)
             .send()
-            .await?;
+            .await?; // TODO: handle request error
         if response.status().is_success() {
             Ok(response)
         } else {
