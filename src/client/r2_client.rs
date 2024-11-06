@@ -35,7 +35,6 @@ impl ClientTrait for R2Client {
         match self.upload_file(&url, &name).await {
             Ok(resp) => resp,
             Err(LfaError::FileExists(_)) => {
-                info!("File already exists: {}", url);
                 return Ok(());
             }
             Err(LfaError::InternalServerError(_)) => {
