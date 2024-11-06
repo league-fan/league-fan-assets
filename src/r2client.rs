@@ -1,10 +1,13 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use log::{info, warn};
-use reqwest::Client;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use serde::Serialize;
 
+use crate::error::LfaError;
+
 pub struct R2Client {
-    client: Client,
+    client: ClientWithMiddleware,
     worker_url: String,
     token: String,
 }
@@ -19,7 +22,10 @@ impl R2Client {
     pub fn try_from_env() -> Result<Self> {
         let worker_url = std::env::var("R2_WORKER_URL")?;
         let token = std::env::var("R2_TOKEN")?;
-        let client = Client::new();
+        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+        let client = ClientBuilder::new(reqwest::Client::new())
+            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+            .build();
         Ok(R2Client {
             client,
             worker_url,
@@ -27,7 +33,7 @@ impl R2Client {
         })
     }
 
-    pub async fn upload_file(&self, download_url: &str, name: &str) -> Result<()> {
+    pub async fn upload_file(&self, download_url: &str, name: &str) -> Result<(), LfaError> {
         let endpoint = format!("{}/fetchSave", self.worker_url);
         let request_body = UploadRequest {
             url: download_url.to_string(),
@@ -38,21 +44,29 @@ impl R2Client {
             .client
             .post(endpoint)
             .header("Authorization", format!("Bearer {}", self.token))
-            .json(&request_body)
+            .body(serde_json::to_string(&request_body)?)
             .send()
             .await?;
         let status = response.status();
         let text = response.text().await?;
-        if status.is_success() {
-            info!("Upload success: {} {}", status.as_u16(), text);
-            Ok(())
-        } else {
-            warn!("Upload failed: {} {}", status.as_u16(), text);
-            Err(anyhow!("Upload failed: {} {}", status.as_u16(), text))
+
+        match status {
+            s if s.is_success() => {
+                info!("Upload success: {} {}", status.as_u16(), text);
+                Ok(())
+            }
+            s if s.as_u16() == 409 => {
+                warn!("Upload failed: {} {}", status.as_u16(), text);
+                Err(LfaError::FileExists(text))
+            }
+            _ => {
+                warn!("Upload failed: {} {}", status.as_u16(), text);
+                Err(LfaError::UploadFailed(status.as_u16(), text))
+            }
         }
     }
 
-    pub async fn delete_file(&self, name: &str) -> Result<()> {
+    pub async fn delete_file(&self, name: &str) -> Result<(), LfaError> {
         let endpoint = format!("{}/delete", self.worker_url);
         let request_body = UploadRequest {
             url: "".to_string(),
@@ -63,17 +77,24 @@ impl R2Client {
             .client
             .post(endpoint)
             .header("Authorization", format!("Bearer {}", self.token))
-            .json(&request_body)
+            .body(serde_json::to_string(&request_body)?)
             .send()
             .await?;
         let status = response.status();
         let text = response.text().await?;
-        if status.is_success() {
-            info!("Delete success: {} {}", status.as_u16(), text);
-            Ok(())
-        } else {
-            warn!("Delete failed: {} {}", status.as_u16(), text);
-            Err(anyhow!("Delete failed: {} {}", status.as_u16(), text))
+        match status {
+            s if s.is_success() => {
+                info!("Delete success: {} {}", status.as_u16(), text);
+                Ok(())
+            }
+            s if s.as_u16() == 404 => {
+                warn!("Delete failed: {} {}", status.as_u16(), text);
+                Err(LfaError::FileNotExists(text))
+            }
+            _ => {
+                warn!("Delete failed: {} {}", status.as_u16(), text);
+                Err(LfaError::UploadFailed(status.as_u16(), text))
+            }
         }
     }
 }

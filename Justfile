@@ -4,7 +4,7 @@ run:
     cargo run
 
 debug:
-    RUST_LOG=DEBUG cargo run > target/debug.log
+    RUST_LOG=INFO cargo run > target/debug.log
 
 test:
     cargo test

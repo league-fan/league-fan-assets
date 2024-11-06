@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use crate::error::LfaError;
+
 use super::{
     common::{CollecTasks, FromUrl, ToTask},
     utils::{AssetsType, AssetsTypeTrait, Config},
@@ -173,7 +175,7 @@ impl AssetsTypeTrait for Loot {
 }
 
 impl ToTask for LootItem {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
@@ -188,7 +190,7 @@ impl ToTask for LootItem {
 }
 
 impl ToTask for LootBundle {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
@@ -203,7 +205,7 @@ impl ToTask for LootBundle {
 }
 
 impl ToTask for LootRecipe {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
         let config = Arc::clone(&config);
         let image = self.image_path.clone();
 
@@ -218,7 +220,7 @@ impl ToTask for LootRecipe {
 }
 
 impl ToTask for LootTable {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>> {
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>> {
         let config = Arc::clone(&config);
         let image = self.image.clone();
 
@@ -233,7 +235,7 @@ impl ToTask for LootTable {
 }
 
 impl CollecTasks for Loot {
-    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>> {
+    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<(), LfaError>>> {
         let mut tasks = vec![];
 
         for item in &self.loot_items {

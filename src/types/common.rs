@@ -1,22 +1,26 @@
-use log::{debug, warn};
+use log::{debug, info, warn};
 use std::{path::PathBuf, sync::Arc};
 use tokio::task::JoinHandle;
 
 use anyhow::{anyhow, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::{middleware::FetchClient, r2client::R2Client};
+use crate::{error::LfaError, fetch_client::FetchClient, r2client::R2Client};
 
 use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config, FALLBACK_CONFIG};
 
-pub trait CollecTasks {
-    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>>;
+pub trait CollecTasks: Serialize {
+    fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<(), LfaError>>>;
+
+    fn to_json(&self) -> Result<String> {
+        serde_json::to_string(self).map_err(|e| e.into())
+    }
 }
 
 pub trait ToTask {
-    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<()>>>;
+    fn to_task(&self, config: Arc<Config>) -> Option<JoinHandle<Result<(), LfaError>>>;
 
-    fn to_edge_task(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<()>>> {
+    fn to_edge_task(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<(), LfaError>>> {
         let url = url.trim().to_string();
         if url.is_empty() || !url.starts_with("/lol-game-data/assets/") {
             warn!("Invalid url: {}", url);
@@ -30,6 +34,10 @@ pub trait ToTask {
         let handle = tokio::spawn(async move {
             match r2.upload_file(&download_url, &name).await {
                 Ok(_) => Ok(()),
+                Err(LfaError::FileExists(_)) => {
+                    info!("File exists: {:?}", name);
+                    Ok(())
+                }
                 Err(e) => {
                     warn!("Failed to upload: {}, try fallback", e);
                     r2.upload_file(&fallback_url, &name).await
@@ -40,7 +48,10 @@ pub trait ToTask {
         Ok(handle)
     }
 
-    fn to_download_task(url: &str, config: Arc<Config>) -> Result<JoinHandle<Result<()>>> {
+    fn to_download_task(
+        url: &str,
+        config: Arc<Config>,
+    ) -> Result<JoinHandle<Result<(), LfaError>>> {
         let url = url.trim();
         if url.is_empty() || !url.starts_with("/lol-game-data/assets/") {
             warn!("Invalid url: {}", url);
@@ -68,24 +79,23 @@ pub trait SaveFile {
     fn save_file(
         &self,
         save_path: &PathBuf,
-    ) -> impl std::future::Future<Output = Result<()>> + Send;
+    ) -> impl std::future::Future<Output = Result<(), LfaError>> + Send;
 }
 
 impl SaveFile for Vec<u8> {
-    async fn save_file(&self, save_path: &PathBuf) -> Result<()> {
-        let parent = save_path.parent().ok_or_else(|| anyhow!("Invalid path"))?;
-        if !parent.exists() {
-            tokio::fs::create_dir_all(parent)
+    async fn save_file(&self, save_path: &PathBuf) -> Result<(), LfaError> {
+        if let Some(parent) = save_path.parent() {
+            if !parent.exists() {
+                tokio::fs::create_dir_all(parent).await?
+            }
+            tokio::fs::write(save_path, self)
                 .await
-                .map_err(|e| anyhow!("Failed to create dir: {:?}, {}", parent, e))?;
+                .map_err(|e| e.into())
+        } else {
+            Err(LfaError::FileNotExists(
+                save_path.to_string_lossy().to_string(),
+            ))
         }
-        tokio::fs::write(save_path, self)
-            .await
-            .map_err(|e| e.into())
-            .and_then(|_| {
-                debug!("Save file: {:?}", save_path);
-                Ok(())
-            })
     }
 }
 
