@@ -1,6 +1,6 @@
 use crate::{
     error::LfaError,
-    preludes::{get_cdragon_url, Config, FALLBACK_CONFIG},
+    preludes::{get_cdragon_url, Config, FetchClient, FALLBACK_CONFIG},
 };
 use serde::Serialize;
 
