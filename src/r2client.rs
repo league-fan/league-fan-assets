@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use log::{error, info};
+use log::{info, warn};
 use reqwest::Client;
 use serde::Serialize;
 
@@ -47,7 +47,7 @@ impl R2Client {
             info!("Upload success: {} {}", status.as_u16(), text);
             Ok(())
         } else {
-            error!("Upload failed: {} {}", status.as_u16(), text);
+            warn!("Upload failed: {} {}", status.as_u16(), text);
             Err(anyhow!("Upload failed: {} {}", status.as_u16(), text))
         }
     }
@@ -72,7 +72,7 @@ impl R2Client {
             info!("Delete success: {} {}", status.as_u16(), text);
             Ok(())
         } else {
-            error!("Delete failed: {} {}", status.as_u16(), text);
+            warn!("Delete failed: {} {}", status.as_u16(), text);
             Err(anyhow!("Delete failed: {} {}", status.as_u16(), text))
         }
     }

@@ -7,7 +7,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{middleware::FetchClient, r2client::R2Client};
 
-use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config};
+use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config, FALLBACK_CONFIG};
 
 pub trait CollecTasks {
     fn collect_tasks(&self, config: Arc<Config>) -> Vec<JoinHandle<Result<()>>>;
@@ -24,9 +24,18 @@ pub trait ToTask {
         }
         let name = url.clone().trim_start_matches('/').to_string();
         let download_url = get_cdragon_url(&url, &config);
+        let fallback_url = get_cdragon_url(&url, &FALLBACK_CONFIG);
 
         let r2 = R2Client::try_from_env()?;
-        let handle = tokio::spawn(async move { r2.upload_file(&download_url, &name).await });
+        let handle = tokio::spawn(async move {
+            match r2.upload_file(&download_url, &name).await {
+                Ok(_) => Ok(()),
+                Err(e) => {
+                    warn!("Failed to upload: {}, try fallback", e);
+                    r2.upload_file(&fallback_url, &name).await
+                }
+            }
+        });
 
         Ok(handle)
     }
