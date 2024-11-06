@@ -27,6 +27,7 @@ impl R2Client {
     }
 
     pub async fn upload_file(&self, download_url: &str, name: &str) -> Result<()> {
+        let endpoint = format!("{}/fetchSave", self.worker_url);
         let request_body = UploadRequest {
             url: download_url.to_string(),
             name: name.to_string(),
@@ -34,30 +35,97 @@ impl R2Client {
 
         let response = self
             .client
-            .post(&self.worker_url)
+            .post(endpoint)
             .header("Authorization", format!("Bearer {}", self.token))
             .json(&request_body)
             .send()
             .await?;
-        eprintln!("Response: {:#?}", response);
-        if response.status().is_success() {
+        let status = response.status();
+        let text = response.text().await?;
+        if status.is_success() {
+            println!("Upload success: {}", text);
             Ok(())
         } else {
-            Err(anyhow!("Failed to upload file"))
+            Err(anyhow!("Upload failed: {} {}", status.as_u16(), text))
+        }
+    }
+
+    pub async fn delete_file(&self, name: &str) -> Result<()> {
+        let endpoint = format!("{}/delete", self.worker_url);
+        let request_body = UploadRequest {
+            url: "".to_string(),
+            name: name.to_string(),
+        };
+
+        let response = self
+            .client
+            .post(endpoint)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .json(&request_body)
+            .send()
+            .await?;
+        let status = response.status();
+        let text = response.text().await?;
+        if status.is_success() {
+            println!("Delete success: {}", text);
+            Ok(())
+        } else {
+            Err(anyhow!("Delete failed: {} {}", status.as_u16(), text))
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+
+    use assertables::assert_contains;
+
     use super::*;
 
+    const VALID_URL: &str = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loot/loottable_chest_generic_1.png";
+    const INVALID_URL: &str = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/assets/loot/loottable_chest_generic_1.png";
+
     #[tokio::test]
-    async fn test_upload_file() {
+    async fn test_upload_file_fail_to_download() {
         let client = R2Client::from_env();
-        let download_url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/zh_cn/assets/loot/loottable_chest_generic_1.png";
-        let name = "/lol-game-data/assets/ASSETS/Loot/loottable_chest_generic_1.png";
+        let download_url = INVALID_URL;
+        let name = "test_unreachable.png";
+        let result = client.upload_file(download_url, name).await;
+        assert!(result.is_err());
+        assert_contains!(
+            result.unwrap_err().to_string(),
+            "Failed to download the content"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_upload_file_already_exist() {
+        let client = R2Client::from_env();
+        let download_url = VALID_URL;
+        let name = "test_exist.png";
+        let result = client.upload_file(download_url, name).await;
+        assert!(result.is_err());
+        assert_contains!(result.unwrap_err().to_string(), "already exists");
+    }
+
+    #[tokio::test]
+    async fn test_upload_file_and_delete() {
+        let client = R2Client::from_env();
+        let download_url = VALID_URL;
+        let name = "test_success.png";
         let result = client.upload_file(download_url, name).await;
         assert!(result.is_ok());
+
+        let result = client.delete_file(name).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_delete_file_not_exist() {
+        let client = R2Client::from_env();
+        let name = "test_not_exist.png";
+        let result = client.delete_file(name).await;
+        assert!(result.is_err());
+        assert_contains!(result.unwrap_err().to_string(), "not exist");
     }
 }

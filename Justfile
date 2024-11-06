@@ -10,7 +10,7 @@ test:
     cargo test
 
 test-r2:
-    cargo test r2client::tests::test_upload_file -- --exact
+    cargo test r2client::tests
 
 lint:
     cargo fmt
