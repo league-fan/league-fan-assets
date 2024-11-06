@@ -31,13 +31,23 @@ impl ClientTrait for R2Client {
     async fn do_task(&self, task: &AssetsTask) -> Result<(), crate::error::LfaError> {
         let url = task.url.clone();
         let name = task.path.trim_start_matches('/').to_string();
-        let resp = self.upload_file(&url, &name).await?;
-        // when get 500 internal server error, try fallback url
-        if resp.status().as_u16() == 500 && task.fallback_url.is_some() {
-            info!("File not found, try fallback: {}", url);
-            let fallback_url = task.fallback_url.as_ref().unwrap();
-            self.upload_file(fallback_url, &name).await?;
-        }
+
+        match self.upload_file(&url, &name).await {
+            Ok(resp) => resp,
+            Err(LfaError::FileExists(_)) => {
+                info!("File already exists: {}", url);
+                return Ok(());
+            }
+            Err(LfaError::InternalServerError(_)) => {
+                if task.fallback_url.is_none() {
+                    return Err(LfaError::FileNotExists(url));
+                }
+                info!("Internal server error, try fallback: {}", url);
+                let fallback_url = task.fallback_url.as_ref().unwrap();
+                self.upload_file(fallback_url, &name).await?
+            }
+            Err(e) => return Err(e),
+        };
 
         Ok(())
     }

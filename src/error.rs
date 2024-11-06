@@ -33,7 +33,7 @@ pub enum LfaError {
 impl LfaError {
     pub async fn from_response(response: Response) -> Self {
         let status = response.status();
-        let text = response.text().await.unwrap_or_default();
+        let text = response.url().as_str().to_string();
         match status.as_u16() {
             400 => LfaError::BadRequest(text),
             401 => LfaError::Unauthorized(text),

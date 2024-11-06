@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use league_fan_assets::preludes::*;
-use log::error;
+use log::{error, info};
 #[tokio::main(flavor = "multi_thread", worker_threads = 3)]
 async fn main() {
     simple_logger::SimpleLogger::new()
@@ -21,6 +21,8 @@ async fn main() {
         let join_handle = tokio::spawn(async move {
             if let Err(e) = client.do_task(&handle).await {
                 error!("Error: {}", e);
+            } else {
+                info!("Downloaded: {}", handle.path);
             }
         });
         join_handles.push(join_handle);
