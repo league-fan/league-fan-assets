@@ -15,6 +15,19 @@ pub trait CollecTasks {
     fn collect_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask>;
 }
 
+pub trait FilterEmptyAssets: Sized {
+    fn filter_empty_assets(&self) -> Option<Self>;
+}
+
+impl FilterEmptyAssets for String {
+    fn filter_empty_assets(&self) -> Option<Self> {
+        match self.trim_start_matches("/lol-game-data/assets/").is_empty() {
+            true => None,
+            false => Some(self.clone()),
+        }
+    }
+}
+
 pub trait FromUrl: DeserializeOwned + AssetsTypeTrait {
     fn from_url(config: &Config) -> impl std::future::Future<Output = Result<Self>> + Send
     where

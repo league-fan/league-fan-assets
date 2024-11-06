@@ -1,4 +1,3 @@
-
 use crate::{
     error::LfaError,
     preludes::{get_cdragon_url, Config, FALLBACK_CONFIG},

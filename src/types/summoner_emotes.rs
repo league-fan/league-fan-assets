@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
+
 use super::{
     common_trait::FromUrl,
     utils::{AssetsType, AssetsTypeTrait},
@@ -22,6 +24,26 @@ impl FromUrl for SummonerEmotes {}
 impl AssetsTypeTrait for SummonerEmotes {
     fn assets_type() -> AssetsType {
         AssetsType::SummonerEmotes
+    }
+}
+
+impl ToTasks for SummonerEmote {
+    fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        if let Some(path) = self.inventory_icon.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
+        tasks
+    }
+}
+
+impl CollecTasks for SummonerEmotes {
+    fn collect_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks= vec![];
+        for item in &self.0 {
+            tasks.extend(item.to_tasks(config.clone()));
+        }
+        tasks
     }
 }
 

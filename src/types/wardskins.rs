@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
+
 use super::{
     common::{Rarity, RegionEnum},
     common_trait::FromUrl,
@@ -54,6 +56,29 @@ impl AssetsTypeTrait for WardSkins {
 impl AssetsTypeTrait for WardSkinSets {
     fn assets_type() -> AssetsType {
         AssetsType::WardSkinSets
+    }
+}
+
+impl ToTasks for WardSkin {
+    fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        if let Some(path) = self.ward_image_path.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
+        if let Some(path) = self.ward_shadow_image_path.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
+        tasks
+    }
+}
+
+impl CollecTasks for WardSkins {
+    fn collect_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        for item in &self.0 {
+            tasks.extend(item.to_tasks(config.clone()));
+        }
+        tasks
     }
 }
 

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::preludes::{AssetsTask, CollecTasks, ToTasks};
+use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
 use super::{
     common_trait::FromUrl,
@@ -174,9 +174,9 @@ impl AssetsTypeTrait for Loot {
 impl ToTasks for LootItem {
     fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
         let mut tasks = vec![];
-        let path = self.image.clone();
-        let task = AssetsTask::from_path_config(&path, &config);
-        tasks.push(task);
+        if let Some(path) = self.image.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
         tasks
     }
 }
@@ -184,9 +184,9 @@ impl ToTasks for LootItem {
 impl ToTasks for LootRecipe {
     fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
         let mut tasks = vec![];
-        let path = self.image_path.clone();
-        let task = AssetsTask::from_path_config(&path, &config);
-        tasks.push(task);
+        if let Some(path) = self.image_path.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
         tasks
     }
 }
@@ -194,9 +194,9 @@ impl ToTasks for LootRecipe {
 impl ToTasks for LootTable {
     fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
         let mut tasks = vec![];
-        let path = self.image.clone();
-        let task = AssetsTask::from_path_config(&path, &config);
-        tasks.push(task);
+        if let Some(path) = self.image.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
         tasks
     }
 }
@@ -204,9 +204,9 @@ impl ToTasks for LootTable {
 impl ToTasks for LootBundle {
     fn to_tasks(&self, config: Arc<Config>) -> Vec<AssetsTask> {
         let mut tasks = vec![];
-        let path = self.image.clone();
-        let task = AssetsTask::from_path_config(&path, &config);
-        tasks.push(task);
+        if let Some(path) = self.image.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
         tasks
     }
 }

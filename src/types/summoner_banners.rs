@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
+
 use super::{
     common_trait::FromUrl,
     utils::{AssetsType, AssetsTypeTrait},
@@ -37,6 +39,42 @@ impl FromUrl for SummonerBanners {}
 impl AssetsTypeTrait for SummonerBanners {
     fn assets_type() -> AssetsType {
         AssetsType::SummonerBanners
+    }
+}
+
+impl ToTasks for BannerFlag {
+    fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        if let Some(path) = self.inventory_icon.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
+        if let Some(path) = self.profile_icon.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
+        tasks
+    }
+}
+
+impl ToTasks for BannerFrame {
+    fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        if let Some(path) = self.inventory_icon.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&path, &config));
+        }
+        tasks
+    }
+}
+
+impl CollecTasks for SummonerBanners {
+    fn collect_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        for item in &self.banner_flags {
+            tasks.extend(item.to_tasks(config.clone()));
+        }
+        for item in &self.banner_frames {
+            tasks.extend(item.to_tasks(config.clone()));
+        }
+        tasks
     }
 }
 

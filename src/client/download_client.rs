@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use log::{debug, info};
+use log::debug;
 
 use crate::error::LfaError;
 

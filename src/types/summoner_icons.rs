@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::preludes::{AssetsTask, CollecTasks, ToTasks};
+use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
 use super::{
     common::{Description, Rarity},
@@ -59,8 +59,10 @@ impl ToTasks for SummonerIcon {
     fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
         let mut tasks = vec![];
         if let Some(path) = self.image_path.clone() {
-            let task = AssetsTask::from_path_config(&path, &config);
-            tasks.push(task);
+            if let Some(path) = path.filter_empty_assets() {
+                let task = AssetsTask::from_path_config(&path, &config);
+                tasks.push(task);
+            }
         }
         tasks
     }

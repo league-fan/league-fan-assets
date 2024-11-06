@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
 use super::{
     common::{Description, Rarity, RarityEnum},
@@ -23,6 +24,7 @@ pub struct Skin {
     pub uncentered_splash_path: String,
     pub tile_path: String,
     pub load_screen_path: String,
+    pub load_screen_vintage_path: Option<String>,
     pub skin_type: SkinType,
     pub rarity: RarityEnum,
     pub is_legacy: bool,
@@ -177,6 +179,73 @@ impl AssetsTypeTrait for Skins {
 impl AssetsTypeTrait for Skinlines {
     fn assets_type() -> AssetsType {
         AssetsType::Skinlines
+    }
+}
+
+impl ToTasks for Skin {
+    fn to_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        if let Some(chroma_path) = self.chroma_path.clone() {
+            if let Some(path) = chroma_path.clone().filter_empty_assets() {
+                tasks.push(AssetsTask::from_path_config(&path, &config));
+            }
+        }
+        if let Some(chromas) = self.chromas.clone() {
+            for chroma in chromas {
+                if let Some(chroma_path) = chroma.chroma_path.clone().filter_empty_assets() {
+                    tasks.push(AssetsTask::from_path_config(&chroma_path, &config));
+                }
+            }
+        }
+        if let Some(splash_path) = self.splash_path.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&splash_path, &config));
+        }
+        if let Some(uncentered_splash_path) =
+            self.uncentered_splash_path.clone().filter_empty_assets()
+        {
+            tasks.push(AssetsTask::from_path_config(
+                &uncentered_splash_path,
+                &config,
+            ));
+        }
+        if let Some(tile_path) = self.tile_path.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&tile_path, &config));
+        }
+        if let Some(load_screen_path) = self.load_screen_path.clone().filter_empty_assets() {
+            tasks.push(AssetsTask::from_path_config(&load_screen_path, &config));
+        }
+        if let Some(load_screen_vintage_path) = self.load_screen_vintage_path.clone() {
+            if let Some(path) = load_screen_vintage_path.clone().filter_empty_assets() {
+                tasks.push(AssetsTask::from_path_config(&path, &config));
+            }
+        }
+
+        // if let Some(splash_video_path) = self.splash_video_path.clone() {
+        //     if let Some(path) = splash_video_path.clone().filter_empty_assets() {
+        //         tasks.push(AssetsTask::from_path_config(&path, &config));
+        //     }
+        // }
+        // if let Some(collection_splash_video_path) = self.collection_splash_video_path.clone() {
+        //     if let Some(path) = collection_splash_video_path.clone().filter_empty_assets() {
+        //         tasks.push(AssetsTask::from_path_config(&path, &config));
+        //     }
+        // }
+        // if let Some(collection_card_hover_video_path) = self.collection_card_hover_video_path.clone() {
+        //     if let Some(path) = collection_card_hover_video_path.clone().filter_empty_assets() {
+        //         tasks.push(AssetsTask::from_path_config(&path, &config));
+        //     }
+        // }
+        tasks
+    }
+}
+
+impl CollecTasks for Skins {
+    fn collect_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
+        let mut tasks = vec![];
+        for item in self.0.values() {
+            tasks.extend(item.to_tasks(config.clone()));
+        }
+        tasks
     }
 }
 
