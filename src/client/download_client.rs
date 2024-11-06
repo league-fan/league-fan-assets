@@ -1,6 +1,9 @@
 use log::info;
 
-use super::{client_trait::{AssetsTask, ClientTrait}, fetch_client::FetchClient};
+use super::{
+    client_trait::{AssetsTask, ClientTrait},
+    fetch_client::FetchClient,
+};
 
 #[derive(Debug, Clone)]
 pub struct DownloadClient {
@@ -14,10 +17,7 @@ impl ClientTrait for DownloadClient {
         }
     }
 
-    async fn do_task(
-        &self,
-        task: &AssetsTask,
-    ) -> Result<(), crate::error::LfaError> {
+    async fn do_task(&self, task: &AssetsTask) -> Result<(), crate::error::LfaError> {
         let url = task.url.clone();
         let save_path = task.path.trim_start_matches('/').to_string();
 

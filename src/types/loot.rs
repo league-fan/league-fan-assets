@@ -1,15 +1,12 @@
 use std::sync::Arc;
 
-use crate::{error::LfaError, preludes::{AssetsTask, CollecTasks, ToTasks}};
+use crate::preludes::{AssetsTask, CollecTasks, ToTasks};
 
 use super::{
     common_trait::FromUrl,
-    utils::{get_cdragon_url, AssetsType, AssetsTypeTrait, Config, FALLBACK_CONFIG},
+    utils::{AssetsType, AssetsTypeTrait, Config},
 };
-use anyhow::Result;
-use log::error;
 use serde::{Deserialize, Serialize};
-use tokio::task::JoinHandle;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

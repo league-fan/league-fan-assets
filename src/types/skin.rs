@@ -1,14 +1,13 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use tokio::task::JoinHandle;
 
-use crate::error::LfaError;
 
 use super::{
-    common::{ Description, Rarity, RarityEnum},common_trait::FromUrl,
-    utils::{AssetsType, AssetsTypeTrait, Config},
+    common::{Description, Rarity, RarityEnum},
+    common_trait::FromUrl,
+    utils::{AssetsType, AssetsTypeTrait},
 };
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

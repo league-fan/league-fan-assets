@@ -1,8 +1,6 @@
 use anyhow::Result;
-use log::{info, warn};
+use log::info;
 use reqwest::Response;
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use serde::Serialize;
 
 use crate::error::LfaError;

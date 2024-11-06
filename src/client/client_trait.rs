@@ -1,11 +1,9 @@
-use std::future::Future;
 
 use crate::{
     error::LfaError,
     preludes::{get_cdragon_url, Config, FALLBACK_CONFIG},
 };
 use serde::Serialize;
-use tokio::task::JoinHandle;
 
 pub trait ClientTrait: Sized + Clone {
     fn default() -> Self;

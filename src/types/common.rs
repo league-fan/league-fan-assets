@@ -1,13 +1,7 @@
-use log::{debug, info, warn};
-use std::{path::PathBuf, sync::Arc};
-use tokio::task::JoinHandle;
 
-use anyhow::{anyhow, Result};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
-use crate::{client::{download_client::DownloadClient, fetch_client::FetchClient, r2_client::R2Client}, error::LfaError};
 
-use super::utils::{get_assets_url, get_cdragon_url, AssetsTypeTrait, Config, FALLBACK_CONFIG};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

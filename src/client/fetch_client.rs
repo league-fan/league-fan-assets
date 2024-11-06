@@ -1,4 +1,7 @@
-use reqwest::{header::{self, HeaderMap}, Response};
+use reqwest::{
+    header::{HeaderMap},
+    Response,
+};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 
@@ -37,7 +40,12 @@ impl FetchClient {
         }
     }
 
-    pub async fn post(&self, url: &str, headers: HeaderMap, body: String) -> Result<Response, LfaError> {
+    pub async fn post(
+        &self,
+        url: &str,
+        headers: HeaderMap,
+        body: String,
+    ) -> Result<Response, LfaError> {
         let response = self
             .client
             .post(url)

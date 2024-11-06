@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use serde::{de::DeserializeOwned, Serialize};
-use tokio::task::JoinHandle;
+use serde::de::DeserializeOwned;
 
-use crate::{client::client_trait::AssetsTask, client::fetch_client::FetchClient, error::LfaError};
+use crate::{client::client_trait::AssetsTask, client::fetch_client::FetchClient};
 
 use super::utils::{get_assets_url, AssetsTypeTrait, Config};
 
