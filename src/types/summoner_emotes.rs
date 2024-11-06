@@ -39,7 +39,7 @@ impl ToTasks for SummonerEmote {
 
 impl CollecTasks for SummonerEmotes {
     fn collect_tasks(&self, config: std::sync::Arc<super::utils::Config>) -> Vec<AssetsTask> {
-        let mut tasks= vec![];
+        let mut tasks = vec![];
         for item in &self.0 {
             tasks.extend(item.to_tasks(config.clone()));
         }

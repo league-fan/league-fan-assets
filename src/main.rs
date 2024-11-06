@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use league_fan_assets::{
     preludes::*,
-    types::{loot, summoner_banners, wardskins},
+    types::summoner_banners,
 };
 use log::{error, info};
 
