@@ -24,12 +24,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74f37166d7d48a0284b99dd824694c26119c700b53bf0d1540cdb147dbdaaf13"
 
 [[package]]
-name = "assertables"
-version = "9.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a69593c7115cd7d0883fcb6d49deadf4e6c410db03814280161a6dfdc732f450"
-
-[[package]]
 name = "async-trait"
 version = "0.1.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -529,7 +523,6 @@ name = "league-fan-assets"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "assertables",
  "log",
  "reqwest",
  "reqwest-middleware",

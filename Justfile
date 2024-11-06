@@ -10,7 +10,7 @@ test:
     cargo test
 
 test-r2:
-    cargo test r2client::tests
+    cargo test client::r2_client::tests
 
 lint:
     cargo fmt

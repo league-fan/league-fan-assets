@@ -103,8 +103,6 @@ impl R2Client {
 #[cfg(test)]
 mod tests {
 
-    use assertables::assert_contains;
-
     use super::*;
 
     const VALID_URL: &str = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/loot/loottable_chest_generic_1.png";
@@ -117,10 +115,7 @@ mod tests {
         let name = "test_unreachable.png";
         let result = client.upload_file(download_url, name).await;
         assert!(result.is_err());
-        assert_contains!(
-            result.unwrap_err().to_string(),
-            "Failed to download the content"
-        );
+        assert!(matches!(result, Err(LfaError::InternalServerError(_))));
     }
 
     #[tokio::test]
@@ -130,7 +125,7 @@ mod tests {
         let name = "test_exist.png";
         let result = client.upload_file(download_url, name).await;
         assert!(result.is_err());
-        assert_contains!(result.unwrap_err().to_string(), "already exists");
+        assert!(matches!(result, Err(LfaError::FileExists(_))));
     }
 
     #[tokio::test]
@@ -151,6 +146,6 @@ mod tests {
         let name = "test_not_exist.png";
         let result = client.delete_file(name).await;
         assert!(result.is_err());
-        assert_contains!(result.unwrap_err().to_string(), "not exist");
+        assert!(matches!(result, Err(LfaError::FileNotExists(_))));
     }
 }
