@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use ts_rs::TS;
 
 use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
@@ -16,6 +17,8 @@ pub struct Skins(pub HashMap<String, Skin>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Skin {
     pub id: i64,
     pub is_base: bool,
@@ -33,10 +36,10 @@ pub struct Skin {
     pub collection_card_hover_video_path: Option<String>,
     pub features_text: Option<String>,
     pub chroma_path: Option<String>,
-    pub emblems: Option<Value>,
+    pub emblems: Option<String>,
     pub region_rarity_id: i64,
-    pub rarity_gem_path: Option<Value>,
-    pub skin_lines: Option<Vec<SkinLine>>,
+    pub rarity_gem_path: Option<String>,
+    pub skin_lines: Option<Vec<SkinLineId>>,
     pub description: Option<String>,
     pub chromas: Option<Vec<Chroma>>,
     pub skin_augments: Option<SkinAugments>,
@@ -45,12 +48,16 @@ pub struct Skin {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SkinLine {
+#[derive(TS)]
+#[ts(export)]
+pub struct SkinLineId {
     id: i32,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Chroma {
     pub id: i64,
     pub name: String,
@@ -63,6 +70,8 @@ pub struct Chroma {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct SkinAugments {
     pub borders: Borders,
     pub augments: Option<Vec<Augment>>,
@@ -70,6 +79,8 @@ pub struct SkinAugments {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Borders {
     pub layer0: Option<Vec<Layer>>,
     pub layer1: Option<Vec<Layer>>,
@@ -77,6 +88,8 @@ pub struct Borders {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Layer {
     pub content_id: String,
     pub layer: i64,
@@ -86,6 +99,8 @@ pub struct Layer {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Augment {
     pub content_id: String,
     pub overlays: Vec<Overlay>,
@@ -93,6 +108,8 @@ pub struct Augment {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Overlay {
     #[serde(rename = "centeredLCOverlayPath")]
     pub centered_lcoverlay_path: String,
@@ -106,6 +123,8 @@ pub struct Overlay {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct QuestSkinInfo {
     pub name: String,
     pub product_type: String,
@@ -120,6 +139,8 @@ pub struct QuestSkinInfo {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Tier {
     pub id: i64,
     pub name: String,
@@ -139,6 +160,8 @@ pub struct Tier {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct DescriptionInfo {
     title: String,
     description: String,
@@ -146,6 +169,8 @@ pub struct DescriptionInfo {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(TS)]
+#[ts(export)]
 pub enum SkinType {
     #[default]
     #[serde(rename = "")]
@@ -158,10 +183,14 @@ pub enum SkinType {
 impl FromUrl for Skins {}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(TS)]
+#[ts(export)]
 pub struct Skinlines(pub Vec<Skinline>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Skinline {
     id: i64,
     name: String,

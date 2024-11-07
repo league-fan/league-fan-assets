@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
@@ -13,6 +14,8 @@ pub struct WardSkins(pub Vec<WardSkin>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct WardSkin {
     pub id: i64,
     pub name: String,
@@ -26,6 +29,8 @@ pub struct WardSkin {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct RegionalDescription {
     pub region: RegionEnum,
     pub description: String,
@@ -36,6 +41,8 @@ pub struct WardSkinSets(pub Vec<WardSkinSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct WardSkinSet {
     pub id: i64,
     pub hidden: bool,

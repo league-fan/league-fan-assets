@@ -7,9 +7,12 @@ use super::{
     utils::{AssetsType, AssetsTypeTrait, Config},
 };
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Loot {
     #[serde(rename = "LootItems")]
     pub loot_items: Vec<LootItem>,
@@ -25,6 +28,8 @@ pub struct Loot {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct LootItem {
     pub id: String,
     pub name: String,
@@ -45,6 +50,8 @@ pub struct LootItem {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+#[derive(TS)]
+#[ts(export)]
 pub enum RarityField {
     #[default]
     Default,
@@ -55,6 +62,8 @@ pub enum RarityField {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+#[derive(TS)]
+#[ts(export)]
 pub enum TypeField {
     #[default]
     Boost,
@@ -81,6 +90,8 @@ pub enum TypeField {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct LootRecipe {
     pub id: String,
     pub description: String,
@@ -96,6 +107,8 @@ pub struct LootRecipe {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Output {
     pub loot_id: String,
     pub localized_description: String,
@@ -103,6 +116,8 @@ pub struct Output {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct LootTable {
     pub id: String,
     pub description: String,
@@ -113,6 +128,8 @@ pub struct LootTable {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct DropChance {
     pub loot_id: String,
     pub localized_description: String,
@@ -120,6 +137,8 @@ pub struct DropChance {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct LootBundle {
     pub id: String,
     pub description: String,
@@ -130,6 +149,8 @@ pub struct LootBundle {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Content {
     pub query: Query,
     pub quantity_expression: String,
@@ -138,12 +159,16 @@ pub struct Content {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Query {
     pub loot_id: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct LootTokenBankCard {
     pub loot_item_name: String,
     pub backsplash_image_path: String,

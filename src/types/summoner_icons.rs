@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
@@ -13,6 +14,8 @@ pub struct SummonerIcons(pub Vec<SummonerIcon>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct SummonerIcon {
     pub id: i64,
     pub title: String,
@@ -32,6 +35,8 @@ pub struct SummonerIconSets(pub Vec<SummonerIconSet>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct SummonerIconSet {
     pub id: i64,
     pub hidden: bool,

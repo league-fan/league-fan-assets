@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Description {
     pub region: RegionEnum,
     pub description: String,
@@ -9,12 +12,16 @@ pub struct Description {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct Rarity {
     pub region: RegionEnum,
     pub rarity: i64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(TS)]
+#[ts(export)]
 pub enum RarityEnum {
     #[serde(rename = "kEpic")]
     Epic,
@@ -40,6 +47,8 @@ pub enum RarityEnum {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(TS)]
+#[ts(export)]
 pub enum RegionEnum {
     #[default]
     #[serde(rename = "")]

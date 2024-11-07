@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
@@ -9,6 +10,8 @@ use super::{
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct SummonerBanners {
     #[serde(rename = "BannerFlags")]
     pub banner_flags: Vec<BannerFlag>,
@@ -18,6 +21,8 @@ pub struct SummonerBanners {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct BannerFlag {
     pub level: i64,
     pub theme: String,
@@ -28,6 +33,8 @@ pub struct BannerFlag {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct BannerFrame {
     pub level: i64,
     pub name: String,

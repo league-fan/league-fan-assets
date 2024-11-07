@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use crate::preludes::{AssetsTask, CollecTasks, FilterEmptyAssets, ToTasks};
 
@@ -12,6 +13,8 @@ pub struct SummonerEmotes(pub Vec<SummonerEmote>);
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(TS)]
+#[ts(export)]
 pub struct SummonerEmote {
     pub id: i64,
     pub name: String,
