@@ -1,0 +1,46 @@
+{
+  "name": "@wesleyel/cdragon-assets",
+  "version": "0.0.0",
+  "description": "A package for fetching assets from the Community Dragon",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "vitest",
+    "build": "vite build",
+    "deploy": "npm publish",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "league of legends",
+    "lol",
+    "cdragon"
+  ],
+  "author": "Wesleyel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/league-fan/league-fan-assets.git"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.1",
+    "eslint": "9.x",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.12.0",
+    "prettier": "^3.4.1",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.16.0",
+    "vite": "^6.0.1",
+    "vite-plugin-dts": "^4.3.0",
+    "vitest": "^2.1.6"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@wesleyel"
+  }
+}
