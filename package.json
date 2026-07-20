@@ -50,8 +50,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "prepare": "npm run build",
     "prepack": "npm run build",
-    "check:size": "npm pack --dry-run 2>&1 | tee /tmp/lfa-pack.txt && node scripts/check-pack-size.mjs"
+    "check:size": "node scripts/check-pack-size.mjs"
   },
   "engines": {
     "node": ">=18"
