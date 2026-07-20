@@ -19,6 +19,4 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Pack size budget
-        run: |
-          npm pack --dry-run
-          node scripts/check-pack-size.mjs
+        run: node scripts/check-pack-size.mjs
