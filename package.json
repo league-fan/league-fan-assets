@@ -1,6 +1,6 @@
 {
   "name": "@magicwenli/league-fan-assets",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0",
   "description": "Typed League of Legends asset loaders (icons, emotes, wards, loot, champions, skins) for league-fan",
   "type": "module",
   "license": "MIT",
