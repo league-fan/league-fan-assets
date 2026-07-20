@@ -1,0 +1,10 @@
+name = "league-fan-data"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+# Serves prebuilt JSON from the shared league-fan R2 bucket under meta/.
+# Image binaries may already live under lol-game-data/ in the same bucket.
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "league-fan"

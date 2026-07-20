@@ -43,8 +43,20 @@ Asset names are flattened with \`__\` for GitHub Releases:
 - \`zh_cn__skins.json\`
 - \`manifest.json\`, \`version.json\`
 
-Also attached: \`league-fan-assets-data-${version}.tar.gz\` (nested paths preserved)." \
+Also attached: \`league-fan-assets-data-${version}.tar.gz\` (nested paths preserved).
+
+Mirrored to Cloudflare R2 CDN:
+https://league-fan-data.yxra3603.workers.dev/latest/" \
   data/release-assets/*
 
 log "Release $tag published"
+
+if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] || [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] || command -v wrangler >/dev/null 2>&1; then
+  log "Syncing to R2…"
+  chmod +x scripts/sync-r2.sh
+  ./scripts/sync-r2.sh || log "WARN: R2 sync failed (non-fatal for local publish)"
+else
+  log "Skip R2 sync (no wrangler / CLOUDFLARE_API_TOKEN)"
+fi
+
 exit 0

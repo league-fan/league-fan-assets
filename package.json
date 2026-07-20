@@ -46,6 +46,8 @@
   "scripts": {
     "build": "tsup",
     "build:data": "tsx scripts/build-data.ts",
+    "sync:r2": "bash scripts/sync-r2.sh",
+    "deploy:cdn": "wrangler deploy --config workers/data-cdn/wrangler.toml",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

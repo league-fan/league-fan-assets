@@ -58,34 +58,57 @@ createClient({ source: { kind: "cdragon", patch: "pbe" } })
 
 Fetches raw CDragon JSON and applies shared transforms (path rewrite, loot filter, quest skin expansion, …).
 
-### B) GitHub Releases (prebuilt)
+### B) Cloudflare CDN / GitHub Releases (prebuilt)
 
-Daily CI builds normalized JSON and publishes `data-v{version}` releases.
+Daily CI builds normalized JSON, publishes `data-v{version}` **GitHub Releases**, and mirrors the same files to **Cloudflare R2** served by Worker `league-fan-data` (CORS-enabled).
+
+**Browser (recommended):**
+
+```ts
+createClient({
+  lang: "zh_cn",
+  source: { kind: "release" }, // defaults to Cloudflare CDN
+  // or pin: source: { kind: "release", version: "16.14.1" }
+  // or override: source: { kind: "release", baseUrl: "https://..." }
+});
+```
+
+CDN base: `https://league-fan-data.yxra3603.workers.dev/latest`
 
 > **CORS note:** GitHub Release download URLs are **not** browser-CORS-friendly.
-> Use `source: { kind: "release" }` from Node, SSR, or a proxy/CDN with CORS.
-> For pure browser apps, prefer `source: { kind: "cdragon" }` (CDragon sends `Access-Control-Allow-Origin: *`).
+> Prefer the default CDN base (or any CORS proxy). Use `GITHUB_RELEASE_BASE` / `githubReleaseDataUrl()` only from Node.
 
+Asset names are **flattened** (same on GH Releases and CDN):
 
-Asset names are **flattened** (GitHub Releases are flat):
-
-| Logical path | Release asset |
-|--------------|---------------|
+| Logical path | Asset name |
+|--------------|------------|
 | `default/summoner-icons.json` | `default__summoner-icons.json` |
 | `zh_cn/skins.json` | `zh_cn__skins.json` |
 | `manifest.json` | `manifest.json` |
 
 ```
+https://league-fan-data.yxra3603.workers.dev/latest/default__champions.json
 https://github.com/league-fan/league-fan-assets/releases/latest/download/default__champions.json
 ```
 
-Also attached: `league-fan-assets-data-{version}.tar.gz` with nested folders.
+Also attached on GH: `league-fan-assets-data-{version}.tar.gz` with nested folders.
 
 ```ts
-import { releaseDataUrl } from "@magicwenli/league-fan-assets";
+import { releaseDataUrl, githubReleaseDataUrl } from "@magicwenli/league-fan-assets";
 
-releaseDataUrl({ category: "skins", lang: "zh_cn", version: "15.24.1" });
+releaseDataUrl({ category: "skins", lang: "zh_cn", version: "16.14.1" });
+// → CDN /v/16.14.1/zh_cn__skins.json
 ```
+
+### Ops: data CDN
+
+```bash
+npm run build:data
+npm run sync:r2          # upload meta/latest + meta/v/{VERSION} to R2
+npm run deploy:cdn       # deploy workers/data-cdn
+```
+
+CI secrets for R2 sync: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 
 ## Helpers
 

@@ -34,11 +34,14 @@ export {
 } from "./sources/ddragon.js";
 
 export {
+  DEFAULT_CDN_BASE,
   DEFAULT_RELEASE_BASE,
+  GITHUB_RELEASE_BASE,
   releaseBaseUrl,
   releaseDataUrl,
   releaseManifestUrl,
   releaseAssetName,
+  githubReleaseDataUrl,
 } from "./sources/release.js";
 
 export {
