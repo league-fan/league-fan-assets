@@ -1,9 +1,66 @@
 {
-  "name": "league-fan-assets",
-  "version": "1.2.0",
-  "main": "index.js",
+  "name": "@magicwenli/league-fan-assets",
+  "version": "2.0.0-alpha.0",
+  "description": "Typed League of Legends asset loaders (icons, emotes, wards, loot, champions, skins) for league-fan",
+  "type": "module",
   "license": "MIT",
-  "dependencies": {
-    "axios": "^0.24.0"
+  "author": "magicwenli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/league-fan/league-fan-assets.git"
+  },
+  "homepage": "https://github.com/league-fan/league-fan-assets#readme",
+  "bugs": {
+    "url": "https://github.com/league-fan/league-fan-assets/issues"
+  },
+  "keywords": [
+    "league-of-legends",
+    "lol",
+    "communitydragon",
+    "assets",
+    "skins",
+    "champions"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:data": "tsx scripts/build-data.ts",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run build",
+    "check:size": "npm pack --dry-run 2>&1 | tee /tmp/lfa-pack.txt && node scripts/check-pack-size.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

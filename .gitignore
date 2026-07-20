@@ -1,5 +1,11 @@
 /raw
 /save
+/data
 /node_modules
+/dist
 /.idea
 .npmrc
+*.tgz
+SKIP
+.DS_Store
+coverage

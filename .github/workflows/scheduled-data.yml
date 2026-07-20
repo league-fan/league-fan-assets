@@ -1,0 +1,72 @@
+name: Scheduled data release
+
+on:
+  schedule:
+    - cron: "5 4 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force rebuild even if VERSION unchanged"
+        required: false
+        default: "false"
+
+jobs:
+  data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Build data
+        run: |
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            npm run build:data -- --force
+          else
+            npm run build:data
+          fi
+      - name: Skip if unchanged
+        id: skip
+        run: |
+          if [ -f SKIP ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "CURR_VERSION=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_ENV"
+          fi
+      - name: Publish GitHub Release
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x scripts/publish-data.sh
+          # build already ran; only upload portion
+          version="$CURR_VERSION"
+          tag="data-v${version}"
+          mkdir -p data/release-assets
+          tar -C data/out -czf "data/release-assets/league-fan-assets-data-${version}.tar.gz" .
+          while IFS= read -r -d '' f; do
+            rel="${f#data/out/}"
+            asset_name="${rel//\//__}"
+            cp "$f" "data/release-assets/${asset_name}"
+          done < <(find data/out -type f -name '*.json' -print0)
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release exists, uploading assets"
+            gh release upload "$tag" data/release-assets/* --clobber
+          else
+            gh release create "$tag" \
+              --title "Data $version" \
+              --notes "Prebuilt LoL asset JSON (game version ${version}). Flat asset names use __ separators." \
+              data/release-assets/*
+          fi
+      - name: Commit VERSION
+        if: steps.skip.outputs.skip != 'true'
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "VERSION"
+          default_author: github_actions
+          message: "chore: data version ${{ env.CURR_VERSION }}"
