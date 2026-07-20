@@ -62,6 +62,11 @@ Fetches raw CDragon JSON and applies shared transforms (path rewrite, loot filte
 
 Daily CI builds normalized JSON and publishes `data-v{version}` releases.
 
+> **CORS note:** GitHub Release download URLs are **not** browser-CORS-friendly.
+> Use `source: { kind: "release" }` from Node, SSR, or a proxy/CDN with CORS.
+> For pure browser apps, prefer `source: { kind: "cdragon" }` (CDragon sends `Access-Control-Allow-Origin: *`).
+
+
 Asset names are **flattened** (GitHub Releases are flat):
 
 | Logical path | Release asset |
